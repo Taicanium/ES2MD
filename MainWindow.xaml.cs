@@ -9,7 +9,7 @@ namespace ES2MD;
 /// </summary>
 public partial class MainWindow : Window
 {
-	private List<ESTree> Trees = [];
+	private readonly List<ESTree> Trees = [];
 
     public MainWindow()
     {
@@ -26,6 +26,8 @@ public partial class MainWindow : Window
 
 	private void OpenButton(object sender, RoutedEventArgs e)
 	{
+		Trees.Clear();
+
 		OpenFileDialog openFileDialog = new()
 		{
 			CheckFileExists = true,
@@ -50,6 +52,11 @@ public partial class MainWindow : Window
 
 		Trees.Add(newTree);
 
-		ResultsBox.Text = $"Animations: {newTree.Animations.Count}\nNodes: {newTree.Animations.Sum(static anim => anim.Nodes.Count)}\nTemplates: {newTree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Where(token => token.TokenType == ESToken.ESTokenType.Template).Count()))}\nTokens: {newTree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Count))}";
+		ResultsBox.Text = $@"Animations: {newTree.Animations.Count}
+Nodes: {newTree.Animations.Sum(static anim => anim.Nodes.Count)}
+Templates: {newTree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Where(token => token.TokenType == ESToken.ESTokenType.Template).Count()))}
+Dialogues: {newTree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Where(token => token.TokenType == ESToken.ESTokenType.Dialogue).Count()))}
+Array accessors: {newTree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Where(token => token.TokenType == ESToken.ESTokenType.ArrayAccess).Count()))}
+Tokens: {newTree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Count))}";
 	}
 }

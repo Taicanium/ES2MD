@@ -6,7 +6,7 @@ namespace ES2MD
 	/// This represents a single scene containing multiple animation commands within an ExplorerScript file.
 	/// An object of type ESAnimation corresponds to, e.g., the "def 0 {" line as well as everything inside of the def node's braces.
 	/// </summary>
-	internal class ESAnimation
+	internal partial class ESAnimation
 	{
 		private List<ESNode> _nodes;
 
@@ -19,7 +19,7 @@ namespace ES2MD
 
 		public bool Construct(string animData)
 		{
-			var matches = Regex.Matches(animData, @"(.*?);");
+			var matches = AnimationRegex().Matches(animData);
 
 			foreach (Match match in matches)
 			{
@@ -32,5 +32,7 @@ namespace ES2MD
 		}
 
 		public override string ToString() => $"{string.Join("\n        ", Nodes.Select(node => node.ToString()))}";
+		[GeneratedRegex(@"(.*?);")]
+		private static partial Regex AnimationRegex();
 	}
 }

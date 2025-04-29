@@ -1,9 +1,7 @@
-﻿using System.ComponentModel;
-
-namespace ES2MD
+﻿namespace ES2MD
 {
 	/// <summary>
-	/// An EXPS command is composed of multiple syntactic tokens. The function name, its parentheses, arguments, and return value are all tokens.
+	/// An EXPS command is composed of multiple syntactic tokens. The function name, its arguments, and return value are all tokens.
 	/// We only care about certain tokens, insofar as others can be inferred by the structure of the command.
 	/// </summary>
 	internal class ESToken
@@ -11,10 +9,12 @@ namespace ES2MD
 		public enum ESTokenType
 		{
 			Unknown,
-			Identifier,
 			Argument,
-			Type,
+			ArrayAccess,
+			Dialogue,
+			Identifier,
 			Template,
+			Type,
 		}
 
 		private ESTokenType _tokenType;

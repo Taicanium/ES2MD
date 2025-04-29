@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace ES2MD
 {
@@ -7,7 +6,7 @@ namespace ES2MD
 	/// An object of type ESTree corresponds to an entire .exps file and all of the animations inside it.
 	/// This is the root object created when an EXPS file is opened.
 	/// </summary>
-	internal class ESTree
+	internal partial class ESTree
 	{
 		private List<ESAnimation> _animations;
 
@@ -20,7 +19,7 @@ namespace ES2MD
 
 		public bool Construct(string fileData)
 		{
-			var matches = Regex.Matches(fileData, @"def \d+\s*{(.+)}");
+			var matches = TreeRegex().Matches(fileData);
 
 			foreach (Match match in matches)
 			{
@@ -33,5 +32,7 @@ namespace ES2MD
 		}
 
 		public override string ToString() => $"{string.Join("\n    ", Animations.Select(anim => anim.ToString()))}";
+		[GeneratedRegex(@"def \d+\s*{(.+)}")]
+		private static partial Regex TreeRegex();
 	}
 }
