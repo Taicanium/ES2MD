@@ -1,1 +1,6 @@
 eosScript.txt
+/.vs
+/bin
+/obj
+*.exps
+*.sln
