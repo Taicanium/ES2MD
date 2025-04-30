@@ -20,6 +20,8 @@ public partial class MainWindow : Window
 
 	private static int GetArrayAccessorSum(ESTree tree) => tree.Animations.Sum((ESAnimation anim) => anim.Nodes.Sum(GetArrayAccessorTokens));
 	private static int GetArrayAccessorTokens(ESNode node) => node.Tokens.Where(IsArrayAccessToken).Count();
+	private static int GetCommandTokens(ESNode node) => node.Tokens.Where(IsCommandToken).Count();
+	private static int GetCommandSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetCommandTokens));
 	private static int GetDialogueSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetDialogueTokens));
 	private static int GetDialogueTokens(ESNode node) => node.Tokens.Where(IsDialogueToken).Count();
 	private static int GetNodeSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Count);
@@ -30,6 +32,7 @@ public partial class MainWindow : Window
 	private static int GetTokenCount(ESNode node) => node.Tokens.Count;
 	private static int GetTokenSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetTokenCount));
 	private static bool IsArrayAccessToken(ESToken token) => token.TokenType == ESToken.ESTokenType.ArrayAccess;
+	private static bool IsCommandToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Command;
 	private static bool IsDialogueToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Dialogue;
 	private static bool IsSwitchToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Switch;
 	private static bool IsTemplateToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Template;
@@ -69,6 +72,7 @@ public partial class MainWindow : Window
 
 Animations: {Trees.Sum(static tree => tree.Animations.Count)}
 Array accessors: {Trees.Sum(GetArrayAccessorSum)}
+Commands: {Trees.Sum(GetCommandSum)}
 Dialogues: {Trees.Sum(GetDialogueSum)}
 Nodes: {Trees.Sum(GetNodeSum)}
 Switches: {Trees.Sum(GetSwitchSum)}
