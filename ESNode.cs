@@ -43,10 +43,11 @@ internal partial class ESNode
 		{
 			tokens.Add(match.Groups[1].Success ? new ESTemplate(match.Groups[1].Value, Indent + 1) :
 				match.Groups[2].Success ? new ESSwitch(match.Groups[2].Value, Indent) :
-				match.Groups[3].Success ? new ESToken(match.Groups[3].Value, ESToken.ESTokenType.Dialogue, Indent + 1) :
-				match.Groups[4].Success ? new ESArrayAccessor(match.Groups[4].Value, Indent) :
-				new ESToken(match.Groups[5].Value, hasID ? ESToken.ESTokenType.Argument : ESToken.ESTokenType.Identifier, hasID ? Indent + 1 : Indent));
-			hasID = true;
+				match.Groups[3].Success ? new ESToken(match.Groups[3].Value, ESToken.ESTokenType.Command, hasID ? Indent + 1 : Indent) :
+				match.Groups[4].Success ? new ESToken(match.Groups[4].Value, ESToken.ESTokenType.Dialogue, Indent + 1) :
+				match.Groups[5].Success ? new ESArrayAccessor(match.Groups[5].Value, Indent) :
+				new ESToken(match.Groups[6].Value, hasID ? ESToken.ESTokenType.Argument : ESToken.ESTokenType.Identifier, hasID ? Indent + 1 : Indent));
+			hasID = hasID || !match.Groups[3].Success;
 		}
 
 		return tokens;
@@ -54,6 +55,6 @@ internal partial class ESNode
 
 	public override string ToString() => $"{string.Join("\n", Tokens.Select(token => token.ToString()))}";
 
-	[GeneratedRegex(@"<(.*?)>|(.*?\)\s*?{.*?}\s*?})|""(.+)""|([$\w\.]+\s*?\[\s*?[\w\.]+\s*?\]\s*?=\s*?[\w\.]+)|([\w\.]+)")]
+	[GeneratedRegex(@"<(.*?)>|(.*?\)\s*?{.*?}\s*?})|(forever|continue|end)|""(.+)""|([$\w\.]+\s*?\[\s*?[\w\.]+\s*?\]\s*?=\s*?[\w\.]+)|([\w\.]+)")]
 	private static partial Regex NodeRegex();
 }

@@ -31,13 +31,13 @@ internal partial class ESAnimation
 	{
 		_indent = Indent;
 		_nodes = [];
-		_target = Target;
+		_target = Target.Trim();
 	}
 
 	public ESAnimation(string Target)
 	{
 		_nodes = [];
-		_target = Target;
+		_target = Target.Trim();
 	}
 
 	public bool Construct(string animData)

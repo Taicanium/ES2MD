@@ -14,6 +14,7 @@ internal partial class ESToken
 		Argument,
 		ArrayAccess,
 		Case,
+		Command,
 		Dialogue,
 		Identifier,
 		Switch,

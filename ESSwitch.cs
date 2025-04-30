@@ -44,7 +44,7 @@ internal partial class ESSwitch : ESToken
 
 	public override string ToString()
 	{
-		return $"{new string('\t', Indent)}Switch:\n{new string('\t', Indent + 1)}Variable: {GetTargetVariable()}:\n{GetCases()}";
+		return $"{new string('\t', Indent)}Switch:\n{new string('\t', Indent + 1)}Variable: {GetTargetVariable()}\n{GetCases()}";
 	}
 
 	[GeneratedRegex(@"case\s*?\d+\s*?:\s*?.+?}|default\s*?:\s*?.+?}")]
