@@ -10,7 +10,7 @@ internal partial class ESAnimation
 {
 	private int _indent = 0;
 	private List<ESNode> _nodes;
-	private string _target = string.Empty;
+	private readonly string _target = string.Empty;
 
 	public int Indent { get => _indent; set => _indent = value; }
 	public List<ESNode> Nodes { get => _nodes; private set => _nodes = value; }

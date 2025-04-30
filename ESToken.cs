@@ -6,7 +6,7 @@ namespace ES2MD;
 /// An EXPS command is composed of multiple syntactic tokens. The function name, its arguments, and return value are all tokens.
 /// We only care about certain tokens, insofar as others can be inferred by the structure of the command.
 /// </summary>
-internal class ESToken
+internal partial class ESToken
 {
 	public enum ESTokenType
 	{
@@ -48,13 +48,15 @@ internal class ESToken
 		_indent = Indent;
 	}
 
-	private string StripPadding(string value)
+	private static string StripPadding(string value)
 	{
-		while (Regex.IsMatch(value.Trim(), @"^""|""$"))
-			value = Regex.Replace(value.Trim(), @"^""|""$", string.Empty);
+		while (PaddingRegex().IsMatch(value.Trim()))
+			value = PaddingRegex().Replace(value.Trim(), string.Empty);
 
 		return value.Trim();
 	}
 
 	public override string ToString() => $"{new string('\t', Indent)}{TokenType}: {StripPadding(TokenValue)}";
+	[GeneratedRegex(@"^""|""$")]
+	private static partial Regex PaddingRegex();
 }

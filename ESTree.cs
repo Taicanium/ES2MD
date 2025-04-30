@@ -22,7 +22,7 @@ internal partial class ESTree
 
 	public bool Construct(string fileData)
 	{
-		_name = string.IsNullOrWhiteSpace(_name) ? Regex.Match(fileData, @"def (\d+)").Groups[1].Value : _name;
+		_name = string.IsNullOrWhiteSpace(_name) ? IndexRegex().Match(fileData).Groups[1].Value : _name;
 
 		var matches1 = SimpleTreeRegex().Matches(fileData);
 		var matches2 = ComplexTreeRegex().Matches(fileData);
@@ -57,4 +57,6 @@ internal partial class ESTree
 
 	[GeneratedRegex(@"def\s*?(\d+)\s*?{(.+)}")]
 	private static partial Regex SimpleTreeRegex();
+	[GeneratedRegex(@"def (\d+)")]
+	private static partial Regex IndexRegex();
 }

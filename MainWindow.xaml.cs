@@ -18,12 +18,21 @@ public partial class MainWindow : Window
 		InitializeComponent();
 	}
 
-	static int GetArrayAccessorSum(ESTree tree) => tree.Animations.Sum((ESAnimation anim) => anim.Nodes.Sum((ESNode node) => node.Tokens.Where((ESToken token) => token.TokenType == ESToken.ESTokenType.ArrayAccess).Count()));
-	static int GetDialogueSum(ESTree tree) => tree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Where(token => token.TokenType == ESToken.ESTokenType.Dialogue).Count()));
-	static int GetNodeSum(ESTree tree) => tree.Animations.Sum(static anim => anim.Nodes.Count);
-	static int GetSwitchSum(ESTree tree) => tree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Where(token => token.TokenType == ESToken.ESTokenType.Switch).Count()));
-	static int GetTemplateSum(ESTree tree) => tree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Where(token => token.TokenType == ESToken.ESTokenType.Template).Count()));
-	static int GetTokenSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(node => node.Tokens.Count));
+	private static int GetArrayAccessorSum(ESTree tree) => tree.Animations.Sum((ESAnimation anim) => anim.Nodes.Sum(GetArrayAccessorTokens));
+	private static int GetArrayAccessorTokens(ESNode node) => node.Tokens.Where(IsArrayAccessToken).Count();
+	private static int GetDialogueSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetDialogueTokens));
+	private static int GetDialogueTokens(ESNode node) => node.Tokens.Where(IsDialogueToken).Count();
+	private static int GetNodeSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Count);
+	private static int GetSwitchSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetSwitchTokens));
+	private static int GetSwitchTokens(ESNode node) => node.Tokens.Where(IsSwitchToken).Count();
+	private static int GetTemplateSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetTemplateTokens));
+	private static int GetTemplateTokens(ESNode node) => node.Tokens.Where(IsTemplateToken).Count();
+	private static int GetTokenCount(ESNode node) => node.Tokens.Count;
+	private static int GetTokenSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetTokenCount));
+	private static bool IsArrayAccessToken(ESToken token) => token.TokenType == ESToken.ESTokenType.ArrayAccess;
+	private static bool IsDialogueToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Dialogue;
+	private static bool IsSwitchToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Switch;
+	private static bool IsTemplateToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Template;
 
 	private void CloseButton(object sender, RoutedEventArgs e)
 	{
