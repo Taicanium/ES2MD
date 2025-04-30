@@ -19,7 +19,7 @@ public partial class MainWindow : Window
 	private void CloseButton(object sender, RoutedEventArgs e)
 	{
 		foreach (ESTree tree in Trees)
-			File.WriteAllText("lastTree.txt", tree.ToString());
+			File.WriteAllText("lastTree.txt", $"{tree}");
 
         Application.Current.Shutdown();
 	}

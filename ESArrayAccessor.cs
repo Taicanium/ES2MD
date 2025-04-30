@@ -12,15 +12,23 @@ namespace ES2MD
 		{
 		}
 
+		public ESArrayAccessor(string value, int Indent) : base(value, ESTokenType.ArrayAccess, Indent)
+		{
+		}
+
 		public string GetTargetArray() => ArrayRegex().Match(TokenValue).Groups[1].Value;
 
 		public string GetTargetIndex() => ArrayRegex().Match(TokenValue).Groups[2].Value;
 
 		public string GetTargetValue() => ArrayRegex().Match(TokenValue).Groups[3].Value;
 
-		public override string ToString() => $"Array accessor\n            Array: {GetTargetArray()}\n            Index: {GetTargetIndex()}\n            Value: {GetTargetValue()}";
+		public override string ToString() => $@"{new string('\t', Indent)}Array accessor
+{new string('\t', Indent + 1)}Array: {GetTargetArray()}
+{new string('\t', Indent + 1)}Index: {GetTargetIndex()}
+{new string('\t', Indent + 1)}Value: {GetTargetValue()}";
 
 		[GeneratedRegex(@"([$\w]+)\s*?\[\s*?(\w+)\s*?\]\s+=\s*?(\w+)")]
+
 		private static partial Regex ArrayRegex();
 	}
 }

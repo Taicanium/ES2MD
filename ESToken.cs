@@ -17,9 +17,11 @@
 			Type,
 		}
 
+		private int _indent = 0;
 		private ESTokenType _tokenType;
 		private string _tokenValue;
 
+		public int Indent { get => _indent; set => _indent = value; }
 		public ESTokenType TokenType { get => _tokenType; private set => _tokenType = value; }
 		public string TokenValue { get => _tokenValue; private set => _tokenValue = value; }
 
@@ -35,6 +37,13 @@
 			_tokenValue = value;
 		}
 
-		public override string ToString() => $"{TokenType}: {TokenValue}";
+		public ESToken(string value, ESTokenType type, int Indent)
+		{
+			_tokenType = type;
+			_tokenValue = value;
+			_indent = Indent;
+		}
+
+		public override string ToString() => $"{new string('\t', Indent)}{TokenType}: {TokenValue}";
 	}
 }

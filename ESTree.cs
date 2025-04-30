@@ -31,7 +31,8 @@ namespace ES2MD
 			return true;
 		}
 
-		public override string ToString() => $"{string.Join("\n    ", Animations.Select(anim => anim.ToString()))}";
+		public override string ToString() => $"{string.Join("\n", Animations.Select(anim => anim.ToString()))}";
+
 		[GeneratedRegex(@"def \d+\s*{(.+)}")]
 		private static partial Regex TreeRegex();
 	}

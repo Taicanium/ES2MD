@@ -8,12 +8,21 @@ namespace ES2MD
 	/// </summary>
 	internal partial class ESAnimation
 	{
+		private int _indent = 0;
 		private List<ESNode> _nodes;
 
+		public int Indent { get => _indent; set => _indent = value; }
 		public List<ESNode> Nodes { get => _nodes; private set => _nodes = value; }
+		public int AnimIndex { get; private set; } = 0;
 
 		public ESAnimation()
 		{
+			_nodes = [];
+		}
+
+		public ESAnimation(int Indent)
+		{
+			_indent = Indent;
 			_nodes = [];
 		}
 
@@ -23,7 +32,7 @@ namespace ES2MD
 
 			foreach (Match match in matches)
 			{
-				ESNode node = new();
+				ESNode node = new(Indent + 1);
 				if (node.Construct(match.Groups[1].Value))
 					Nodes.Add(node);
 			}
@@ -31,7 +40,9 @@ namespace ES2MD
 			return true;
 		}
 
-		public override string ToString() => $"{string.Join("\n        ", Nodes.Select(node => node.ToString()))}";
+		public override string ToString() => $@"{new string('\t', Indent)}def {AnimIndex}:
+{string.Join("\n", Nodes.Select(node => node.ToString()))}";
+
 		[GeneratedRegex(@"(.*?);")]
 		private static partial Regex AnimationRegex();
 	}

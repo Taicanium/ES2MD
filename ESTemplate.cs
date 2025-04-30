@@ -16,6 +16,10 @@ namespace ES2MD
 		{
 		}
 
+		public ESTemplate(string value, int Indent) : base(value, ESTokenType.Template, Indent)
+		{
+		}
+
 		public string GetTargetType()
 		{
 			var TokenList = TemplateRegex().Matches(TokenValue);
@@ -25,10 +29,12 @@ namespace ES2MD
 		public string[] GetTargetIdentifiers()
 		{
 			var TokenList = TemplateRegex().Matches(TokenValue).ToList();
-			return TokenList.GetRange(1, TokenList.Count - 1).Select(match => match.Groups[1].Value).Select(value => $"\n                Identifier: {value}").ToArray();
+			return [.. TokenList.GetRange(1, TokenList.Count - 1).Select(match => match.Groups[1].Value).Select(value => $"\n{new string('\t', Indent + 1)}Identifier: {value}")];
 		}
 
-		public override string ToString() => $"Template\n                Type: {GetTargetType()}{string.Concat(GetTargetIdentifiers())}";
+		public override string ToString() => $@"{new string('\t', Indent)}Template
+{new string('\t', Indent + 1)}Type: {GetTargetType()}{string.Concat(GetTargetIdentifiers())}";
+
 		[GeneratedRegex(@"([\.\w]+)")]
 		private static partial Regex TemplateRegex();
 	}
