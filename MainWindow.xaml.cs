@@ -1,7 +1,6 @@
 ﻿using Microsoft.Win32;
 using System.ComponentModel;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Windows;
 using static ES2MD.Common;
 
@@ -22,14 +21,12 @@ public partial class MainWindow : Window
 	static int GetArrayAccessorSum(ESTree tree) => tree.Animations.Sum((ESAnimation anim) => anim.Nodes.Sum((ESNode node) => node.Tokens.Where((ESToken token) => token.TokenType == ESToken.ESTokenType.ArrayAccess).Count()));
 	static int GetDialogueSum(ESTree tree) => tree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Where(token => token.TokenType == ESToken.ESTokenType.Dialogue).Count()));
 	static int GetNodeSum(ESTree tree) => tree.Animations.Sum(static anim => anim.Nodes.Count);
+	static int GetSwitchSum(ESTree tree) => tree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Where(token => token.TokenType == ESToken.ESTokenType.Switch).Count()));
 	static int GetTemplateSum(ESTree tree) => tree.Animations.Sum(static anim => anim.Nodes.Sum(static node => node.Tokens.Where(token => token.TokenType == ESToken.ESTokenType.Template).Count()));
 	static int GetTokenSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(node => node.Tokens.Count));
 
 	private void CloseButton(object sender, RoutedEventArgs e)
 	{
-		foreach (ESTree tree in Trees)
-			File.WriteAllText($"{tree.Name}.txt", $"{tree}");
-
 		Application.Current.Shutdown();
 	}
 
@@ -62,10 +59,11 @@ public partial class MainWindow : Window
 						ResultsBox.Text = $@"Files: {fileCount}
 
 Animations: {Trees.Sum(static tree => tree.Animations.Count)}
-Nodes: {Trees.Sum(GetNodeSum)}
-Templates: {Trees.Sum(GetTemplateSum)}
-Dialogues: {Trees.Sum(GetDialogueSum)}
 Array accessors: {Trees.Sum(GetArrayAccessorSum)}
+Dialogues: {Trees.Sum(GetDialogueSum)}
+Nodes: {Trees.Sum(GetNodeSum)}
+Switches: {Trees.Sum(GetSwitchSum)}
+Templates: {Trees.Sum(GetTemplateSum)}
 Tokens: {Trees.Sum(GetTokenSum)}";
 					});
 				}

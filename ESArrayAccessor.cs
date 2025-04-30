@@ -27,7 +27,7 @@ internal partial class ESArrayAccessor : ESToken
 {new string('\t', Indent + 1)}Index: {GetTargetIndex()}
 {new string('\t', Indent + 1)}Value: {GetTargetValue()}";
 
-	[GeneratedRegex(@"([$\w]+)\s*?\[\s*?(\w+)\s*?\]\s+=\s*?(\w+)")]
+	[GeneratedRegex(@"([$\w\.]+)\s*?\[\s*?([\w\.]+)\s*?\]\s+=\s*?([\w\.]+)")]
 
 	private static partial Regex ArrayRegex();
 }

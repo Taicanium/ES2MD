@@ -54,6 +54,6 @@ internal partial class ESNode
 
 	public override string ToString() => $"{string.Join("\n", Tokens.Select(token => token.ToString()))}";
 
-	[GeneratedRegex(@"<(.*?)>|(.*?case\s*?\d+\s*?:.*})|""(.+)""|([$\w]+\s*?\[\s*?\w+\s*?\]\s*?=\s*?\w+)|(\w+)")]
+	[GeneratedRegex(@"<(.*?)>|(.*?\)\s*?{.*?}\s*?})|""(.+)""|([$\w\.]+\s*?\[\s*?[\w\.]+\s*?\]\s*?=\s*?[\w\.]+)|([\w\.]+)")]
 	private static partial Regex NodeRegex();
 }

@@ -22,7 +22,7 @@ internal partial class ESTree
 
 	public bool Construct(string fileData)
 	{
-		_name = Regex.Match(fileData, @"def (\d+)").Groups[1].Value;
+		_name = string.IsNullOrWhiteSpace(_name) ? Regex.Match(fileData, @"def (\d+)").Groups[1].Value : _name;
 
 		var matches1 = SimpleTreeRegex().Matches(fileData);
 		var matches2 = ComplexTreeRegex().Matches(fileData);

@@ -50,6 +50,6 @@ internal partial class ESSwitch : ESToken
 	[GeneratedRegex(@"case\s*?\d+\s*?:\s*?.+?}|default\s*?:\s*?.+?}")]
 	private static partial Regex CaseRegex();
 
-	[GeneratedRegex(@"\$\w+")]
+	[GeneratedRegex(@"\$[\w\.]+")]
 	private static partial Regex VariableRegex();
 }
