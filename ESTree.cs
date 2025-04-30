@@ -24,12 +24,20 @@ internal partial class ESTree
 	{
 		_name = Regex.Match(fileData, @"def (\d+)").Groups[1].Value;
 
-		var matches = TreeRegex().Matches(fileData);
+		var matches1 = SimpleTreeRegex().Matches(fileData);
+		var matches2 = ComplexTreeRegex().Matches(fileData);
 
-		foreach (Match match in matches)
+		foreach (Match match in matches1)
 		{
 			ESAnimation animation = new();
-			if (animation.Construct(match.Groups[1].Value))
+			if (animation.Construct(match.Groups[2].Value, match.Groups[1].Value))
+				Animations.Add(animation);
+		}
+
+		foreach (Match match in matches2)
+		{
+			ESAnimation animation = new(match.Groups[2].Value);
+			if (animation.Construct(match.Groups[3].Value, match.Groups[1].Value))
 				Animations.Add(animation);
 		}
 
@@ -39,21 +47,14 @@ internal partial class ESTree
 	public bool Construct(string fileData, string name)
 	{
 		_name = name;
-
-		var matches = TreeRegex().Matches(fileData);
-
-		foreach (Match match in matches)
-		{
-			ESAnimation animation = new();
-			if (animation.Construct(match.Groups[1].Value))
-				Animations.Add(animation);
-		}
-
-		return true;
+		return Construct(fileData);
 	}
 
 	public override string ToString() => $"{string.Join("\n", Animations.Select(anim => anim.ToString()))}";
 
-	[GeneratedRegex(@"def \d+\s*{(.+)}")]
-	private static partial Regex TreeRegex();
+	[GeneratedRegex(@"def\s*?(\d+)\s*?for\s*?(.+?){(.+)}")]
+	private static partial Regex ComplexTreeRegex();
+
+	[GeneratedRegex(@"def\s*?(\d+)\s*?{(.+)}")]
+	private static partial Regex SimpleTreeRegex();
 }

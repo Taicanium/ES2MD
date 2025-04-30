@@ -10,10 +10,11 @@ internal partial class ESAnimation
 {
 	private int _indent = 0;
 	private List<ESNode> _nodes;
+	private string _target = string.Empty;
 
 	public int Indent { get => _indent; set => _indent = value; }
 	public List<ESNode> Nodes { get => _nodes; private set => _nodes = value; }
-	public int AnimIndex { get; private set; } = 0;
+	public string AnimIndex { get; private set; } = string.Empty;
 
 	public ESAnimation()
 	{
@@ -24,6 +25,19 @@ internal partial class ESAnimation
 	{
 		_indent = Indent;
 		_nodes = [];
+	}
+
+	public ESAnimation(int Indent, string Target)
+	{
+		_indent = Indent;
+		_nodes = [];
+		_target = Target;
+	}
+
+	public ESAnimation(string Target)
+	{
+		_nodes = [];
+		_target = Target;
 	}
 
 	public bool Construct(string animData)
@@ -40,7 +54,13 @@ internal partial class ESAnimation
 		return true;
 	}
 
-	public override string ToString() => $@"{new string('\t', Indent)}def {AnimIndex}:
+	public bool Construct(string animData, string aIndex)
+	{
+		AnimIndex = aIndex;
+		return Construct(animData);
+	}
+
+	public override string ToString() => $@"{new string('\t', Indent)}def {AnimIndex}:{(string.IsNullOrWhiteSpace(_target) ? string.Empty : "\n" + new string('\t', Indent + 1) + "Target: " + _target)}
 {string.Join("\n", Nodes.Select(node => node.ToString()))}";
 
 	[GeneratedRegex(@"(.*?);")]
