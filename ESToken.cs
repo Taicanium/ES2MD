@@ -14,9 +14,10 @@ internal partial class ESToken
 		Argument,
 		ArrayAccess,
 		Case,
-		Command,
+		Conditional,
 		Dialogue,
 		Identifier,
+		Label,
 		Switch,
 		Template,
 		Type,
@@ -40,6 +41,9 @@ internal partial class ESToken
 	{
 		_tokenType = type;
 		_tokenValue = value;
+
+		if (type == ESTokenType.Identifier)
+			Common.Identifiers.Add(value);
 	}
 
 	public ESToken(string value, ESTokenType type, int Indent)
@@ -47,6 +51,9 @@ internal partial class ESToken
 		_tokenType = type;
 		_tokenValue = value;
 		_indent = Indent;
+
+		if (type == ESTokenType.Identifier)
+			Common.Identifiers.Add(value);
 	}
 
 	private static string StripPadding(string value)

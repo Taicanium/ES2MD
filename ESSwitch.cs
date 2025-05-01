@@ -17,7 +17,7 @@ internal partial class ESSwitch : ESToken
 
 		foreach (Match Case in CaseMatches)
 		{
-			Cases.Add(new(Case.Value, Indent + 1));
+			Cases.Add(new(Case.Value));
 		}
 	}
 
@@ -33,8 +33,7 @@ internal partial class ESSwitch : ESToken
 
 	public string GetTargetVariable()
 	{
-		Match match = VariableRegex().Match(TokenValue);
-		return match.Value;
+		return VariableRegex().Match(TokenValue).Groups[1].Value.Trim();
 	}
 
 	public string GetCases()
@@ -50,6 +49,6 @@ internal partial class ESSwitch : ESToken
 	[GeneratedRegex(@"case\s*?\d+\s*?:\s*?.+?}|default\s*?:\s*?.+?}")]
 	private static partial Regex CaseRegex();
 
-	[GeneratedRegex(@"\$[\w\.]+")]
+	[GeneratedRegex(@"\((\s*.+\s*)\)")]
 	private static partial Regex VariableRegex();
 }

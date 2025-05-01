@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using static ES2MD.Common;
 
 namespace ES2MD;
 
@@ -25,36 +26,145 @@ internal partial class ESNode
 		_indent = Indent;
 	}
 
-	public bool Construct(string nodeData)
+	public bool Parse(string tokenData)
 	{
-		Tokens.AddRange(Parse(nodeData, Indent));
+		var matches = SpaceRegex().Matches(tokenData);
+		int braceCount = 0;
+		int bracketCount = 0;
+		string thisData = string.Empty;
+
+		foreach (Match match in matches)
+		{
+			var val = match.Groups[1].Value;
+			thisData += val + " ";
+			if (val.Contains('{'))
+				braceCount += val.AsSpan().Count('{');
+			if (val.Contains('<'))
+				bracketCount += val.AsSpan().Count('<');
+			if (val.Contains("}"))
+			{
+				braceCount -= val.AsSpan().Count('}');
+				if (braceCount == 0)
+				{
+					MakeToken(thisData.Trim());
+					thisData = string.Empty;
+					continue;
+				}
+			}
+			if (val.Contains(">"))
+			{
+				bracketCount -= val.AsSpan().Count('>');
+				if (bracketCount == 0)
+				{
+					MakeToken(thisData.Trim());
+					thisData = string.Empty;
+					continue;
+				}
+			}
+			if (val.Contains(";") && braceCount == 0)
+			{
+				MakeToken(thisData.Trim().Replace(";", string.Empty));
+				thisData = string.Empty;
+				continue;
+			}
+		}
+
+		if (!string.IsNullOrEmpty(thisData.Trim()))
+			MakeToken(thisData.Trim());
 
 		return true;
 	}
 
-	public static List<ESToken> Parse(string tokenData, int Indent)
+	private void MakeToken(string data)
 	{
-		var matches = NodeRegex().Matches(tokenData);
-		var hasID = false;
-
-		List<ESToken> tokens = [];
-
-		foreach (Match match in matches)
+		if (SwitchRegex().IsMatch(data))
 		{
-			tokens.Add(match.Groups[1].Success ? new ESTemplate(match.Groups[1].Value, Indent + 1) :
-				match.Groups[2].Success ? new ESSwitch(match.Groups[2].Value, Indent) :
-				match.Groups[3].Success ? new ESToken(match.Groups[3].Value, ESToken.ESTokenType.Command, hasID ? Indent + 1 : Indent) :
-				match.Groups[4].Success ? new ESToken(match.Groups[4].Value, ESToken.ESTokenType.Dialogue, Indent + 1) :
-				match.Groups[5].Success ? new ESArrayAccessor(match.Groups[5].Value, Indent) :
-				new ESToken(match.Groups[6].Value, hasID ? ESToken.ESTokenType.Argument : ESToken.ESTokenType.Identifier, hasID ? Indent + 1 : Indent));
-			hasID = hasID || !match.Groups[3].Success;
+			Tokens.Add(new ESSwitch(data, Indent));
+			SwitchSum++;
+			TokenSum++;
+			return;
 		}
 
-		return tokens;
+		if (TemplateRegex().IsMatch(data))
+		{
+			Tokens.Add(new ESTemplate(TemplateRegex().Match(data).Groups[1].Value, Indent + 1));
+			TemplateSum++;
+			TokenSum++;
+			return;
+		}
+
+		if (data.StartsWith("@"))
+		{
+			Tokens.Add(new ESToken(data, ESToken.ESTokenType.Label, Indent));
+			LabelSum++;
+			TokenSum++;
+			return;
+		}
+
+		if (ConditionalRegex().IsMatch(data))
+		{
+			Tokens.Add(new ESConditional(data, Indent));
+			ConditionalSum++;
+			TokenSum++;
+			return;
+		}
+
+		if (ArrayRegex().IsMatch(data))
+		{
+			Tokens.Add(new ESArrayAccessor(data, Indent));
+			ArrayAccessorSum++;
+			TokenSum++;
+			return;
+		}
+
+		var argMatches = ArgumentRegex().Matches(data);
+		bool argument = false;
+		foreach (Match arg in argMatches)
+		{
+			var val = arg.Value;
+			if (DialogueRegex().IsMatch(val))
+			{
+				var diagMatch = DialogueRegex().Match(val);
+				Tokens.Add(new ESToken(diagMatch.Groups[2].Value, ESToken.ESTokenType.Dialogue, Indent + 1));
+				TokenSum++;
+				DialogueSum++;
+				return;
+			}
+
+			if (argument)
+			{
+				Tokens.Add(new ESToken(arg.Value, ESToken.ESTokenType.Argument, Indent + 1));
+				TokenSum++;
+				ArgumentSum++;
+				continue;
+			}
+			Tokens.Add(new ESToken(arg.Value, ESToken.ESTokenType.Identifier, Indent));
+			TokenSum++;
+			IdentifierSum++;
+			argument = true;
+		}
 	}
 
 	public override string ToString() => $"{string.Join("\n", Tokens.Select(token => token.ToString()))}";
 
-	[GeneratedRegex(@"<(.*?)>|(.*?\)\s*?{.*?}\s*?})|(forever|continue|end)|""(.+)""|([$\w\.]+\s*?\[\s*?[\w\.]+\s*?\]\s*?=\s*?[\w\.]+)|([\w\.]+)")]
-	private static partial Regex NodeRegex();
+	[GeneratedRegex(@"\w+(?:=*""+[^""]+?""+)*")]
+	private static partial Regex ArgumentRegex();
+
+	[GeneratedRegex(@"[$\w\.]+\s*?\[\s*?[\w\.]+\s*?\]\s+=\s*?[\w\.]+")]
+	private static partial Regex ArrayRegex();
+
+	[GeneratedRegex(@"^(?:elseif|if|else)\s*?\(*.*?\)*")]
+	private static partial Regex ConditionalRegex();
+
+	[GeneratedRegex(@"(\w*?)=*?(""+[^""]+?""+)")]
+	private static partial Regex DialogueRegex();
+
+	[GeneratedRegex(@"(\S+)")]
+	private static partial Regex SpaceRegex();
+
+	[GeneratedRegex(@"^[^{}<>\(\)]+witch.+")]
+	private static partial Regex SwitchRegex();
+
+	[GeneratedRegex(@"(<.+>)")]
+	private static partial Regex TemplateRegex();
 }

@@ -1,0 +1,54 @@
+﻿using System.Text.RegularExpressions;
+
+namespace ES2MD
+{
+	internal partial class ESConditional : ESToken
+	{
+		public enum ConditionalType
+		{
+			None,
+			If,
+			ElseIf,
+			Else,
+		}
+
+		public ESNode ConditionalValue { get; set; }
+
+		private string? _comparison;
+		private ConditionalType? _condition;
+
+		public string? Comparison { get => _comparison; private set => _comparison = value; }
+		public ConditionalType? Condition { get => _condition; private set => _condition = value; }
+
+		public ESConditional() : base()
+		{
+		}
+
+		public ESConditional(string value) : base(value, ESTokenType.Conditional)
+		{
+		}
+
+		public ESConditional(string value, int indent) : base(value, ESTokenType.Conditional, indent)
+		{
+			var matches = Regex.Matches(value.Trim(), @"\((.+)\)");
+			Comparison = matches.Count > 0 ? matches[0].Groups[1].Value.Trim() : null;
+
+			matches = Regex.Matches(value.Trim(), @"^(elseif|if|else)");
+			Condition = matches.Count > 0 ? matches[0].Groups[1].Value switch
+			{
+				"if" => ConditionalType.If,
+				"elseif" => ConditionalType.ElseIf,
+				"else" => ConditionalType.Else,
+				_ => ConditionalType.None,
+			} : null;
+
+			var valMatch = Regex.Match(value.Trim(), @"{(.*)}");
+
+			ConditionalValue = new(Indent + 1);
+			ConditionalValue.Parse(valMatch.Groups[1].Value);
+		}
+		
+		public override string ToString() => $@"{new string('\t', Indent)}Conditional
+{new string('\t', Indent + 1)}Type: {Condition}";
+	}
+}

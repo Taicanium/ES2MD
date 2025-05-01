@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using static ES2MD.Common;
 
 namespace ES2MD;
 
@@ -42,13 +43,32 @@ internal partial class ESAnimation
 
 	public bool Construct(string animData)
 	{
-		var matches = AnimationRegex().Matches(animData);
+		var matches = SpaceRegex().Matches(animData);
+		int braceCount = 0;
+		string thisData = string.Empty;
 
 		foreach (Match match in matches)
 		{
-			ESNode node = new(Indent + 1);
-			if (node.Construct(match.Groups[1].Value))
-				Nodes.Add(node);
+			var val = match.Groups[1].Value;
+			thisData += val + " ";
+			if (val.Contains('{'))
+				braceCount += val.AsSpan().Count('{');
+			if (val.Contains("}"))
+			{
+				braceCount -= val.AsSpan().Count('}');
+				if (braceCount == 0)
+				{
+					MakeNode(thisData);
+					thisData = string.Empty;
+					continue;
+				}
+			}
+			if (val.Contains(";") && braceCount == 0)
+			{
+				MakeNode(thisData);
+				thisData = string.Empty;
+				continue;
+			}
 		}
 
 		return true;
@@ -60,9 +80,19 @@ internal partial class ESAnimation
 		return Construct(animData);
 	}
 
+	private void MakeNode(string data)
+	{
+		ESNode node = new(Indent + 1);
+		if (node.Parse(data))
+		{
+			Nodes.Add(node);
+			NodeSum++;
+		}
+	}
+
 	public override string ToString() => $@"{new string('\t', Indent)}def {AnimIndex}:{(string.IsNullOrWhiteSpace(_target) ? string.Empty : "\n" + new string('\t', Indent + 1) + "Target: " + _target)}
 {string.Join("\n", Nodes.Select(node => node.ToString()))}";
 
-	[GeneratedRegex(@"(.*?);")]
-	private static partial Regex AnimationRegex();
+	[GeneratedRegex(@"(\S+)")]
+	private static partial Regex SpaceRegex();
 }

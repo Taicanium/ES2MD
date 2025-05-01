@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System.ComponentModel;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using static ES2MD.Common;
 
@@ -17,25 +18,6 @@ public partial class MainWindow : Window
 	{
 		InitializeComponent();
 	}
-
-	private static int GetArrayAccessorSum(ESTree tree) => tree.Animations.Sum((ESAnimation anim) => anim.Nodes.Sum(GetArrayAccessorTokens));
-	private static int GetArrayAccessorTokens(ESNode node) => node.Tokens.Where(IsArrayAccessToken).Count();
-	private static int GetCommandTokens(ESNode node) => node.Tokens.Where(IsCommandToken).Count();
-	private static int GetCommandSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetCommandTokens));
-	private static int GetDialogueSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetDialogueTokens));
-	private static int GetDialogueTokens(ESNode node) => node.Tokens.Where(IsDialogueToken).Count();
-	private static int GetNodeSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Count);
-	private static int GetSwitchSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetSwitchTokens));
-	private static int GetSwitchTokens(ESNode node) => node.Tokens.Where(IsSwitchToken).Count();
-	private static int GetTemplateSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetTemplateTokens));
-	private static int GetTemplateTokens(ESNode node) => node.Tokens.Where(IsTemplateToken).Count();
-	private static int GetTokenCount(ESNode node) => node.Tokens.Count;
-	private static int GetTokenSum(ESTree tree) => tree.Animations.Sum(anim => anim.Nodes.Sum(GetTokenCount));
-	private static bool IsArrayAccessToken(ESToken token) => token.TokenType == ESToken.ESTokenType.ArrayAccess;
-	private static bool IsCommandToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Command;
-	private static bool IsDialogueToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Dialogue;
-	private static bool IsSwitchToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Switch;
-	private static bool IsTemplateToken(ESToken token) => token.TokenType == ESToken.ESTokenType.Template;
 
 	private void CloseButton(object sender, RoutedEventArgs e)
 	{
@@ -62,6 +44,19 @@ public partial class MainWindow : Window
 			worker.DoWork += (_, _) =>
 			{
 				int fileCount = 0;
+
+				AnimationSum = 0;
+				ArgumentSum = 0;
+				ArrayAccessorSum = 0;
+				ConditionalSum = 0;
+				DialogueSum = 0;
+				IdentifierSum = 0;
+				LabelSum = 0;
+				NodeSum = 0;
+				SwitchSum = 0;
+				TemplateSum = 0;
+				TokenSum = 0;
+
 				foreach (var file in openFileDialog.FileNames)
 				{
 					Concurrent(() => {
@@ -70,14 +65,17 @@ public partial class MainWindow : Window
 
 						ResultsBox.Text = $@"Files: {fileCount}
 
-Animations: {Trees.Sum(static tree => tree.Animations.Count)}
-Array accessors: {Trees.Sum(GetArrayAccessorSum)}
-Commands: {Trees.Sum(GetCommandSum)}
-Dialogues: {Trees.Sum(GetDialogueSum)}
-Nodes: {Trees.Sum(GetNodeSum)}
-Switches: {Trees.Sum(GetSwitchSum)}
-Templates: {Trees.Sum(GetTemplateSum)}
-Tokens: {Trees.Sum(GetTokenSum)}";
+Animations: {AnimationSum:N0}
+Arguments: {ArgumentSum:N0}
+Array accessors: {ArrayAccessorSum:N0}
+Conditionals: {ConditionalSum:N0}
+Dialogues: {DialogueSum:N0}
+Identifiers: {IdentifierSum:N0}
+Labels: {LabelSum:N0}
+Nodes: {NodeSum:N0}
+Switches: {SwitchSum:N0}
+Templates: {TemplateSum:N0}
+Tokens: {TokenSum:N0}";
 					});
 				}
 			};
@@ -91,10 +89,19 @@ Tokens: {Trees.Sum(GetTokenSum)}";
 		string[] lineData = File.ReadAllLines(filename);
 
 		ESTree newTree = new();
-		newTree.Construct(string.Join(' ', lineData.Select(line => line.Trim())), Path.GetFileNameWithoutExtension(filename));
+		if (newTree.Construct(string.Join(' ', lineData.Select(line => CommentRegex().Replace(line, string.Empty).Trim())), Path.GetFileNameWithoutExtension(filename)))
+			Trees.Add(newTree);
 
-		Trees.Add(newTree);
+		ProcessToMarkdown(newTree);
 
 		return newTree;
 	}
+
+	private void ProcessToMarkdown(ESTree tree)
+	{
+		File.WriteAllText($"Syntax Trees/{tree.Name}.txt", $"{tree}");
+	}
+
+	[GeneratedRegex(@"//.*")]
+	private static partial Regex CommentRegex();
 }

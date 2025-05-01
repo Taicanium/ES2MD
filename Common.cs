@@ -12,7 +12,7 @@ internal static class Common
 		new("ACTOR_ADVENTURE_NPC2", ""),
 		new("ACTOR_ADVENTURE_NPC3", ""),
 		new("ACTOR_ATTENDANT_MANAFI", "Manaphy"),
-		new("ACTOR_ATTENDANT1", ""),
+		new("ACTOR_ATTENDANT1", "(Partner)"),
 		new("ACTOR_ATTENDANT2", ""),
 		new("ACTOR_NPC_AABOKKU", "Arbok"),
 		new("ACTOR_NPC_AAMARUDO", "Armaldo"),
@@ -43,7 +43,7 @@ internal static class Common
 		new("ACTOR_NPC_DAGUTORIO", "Dugtrio"),
 		new("ACTOR_NPC_DARK_DIARUGA", "Primal Dialga"),
 		new("ACTOR_NPC_DARK_PUKURIN", "Primal Wigglytuff"),
-		new("ACTOR_NPC_DEBUG", ""),
+		new("ACTOR_NPC_DEBUG", "(Debug)"),
 		new("ACTOR_NPC_DENRYUU", "Ampharos"),
 		new("ACTOR_NPC_DIARUGA", "Dialga"),
 		new("ACTOR_NPC_DIGUDA", "Diglett"),
@@ -75,7 +75,7 @@ internal static class Common
 		new("ACTOR_NPC_HASSAMU", "Scizor"),
 		new("ACTOR_NPC_HEIGANI", "Corphish"),
 		new("ACTOR_NPC_HERAKUROSU", "Heracross"),
-		new("ACTOR_NPC_HERO_FIRST", ""),
+		new("ACTOR_NPC_HERO_FIRST", "(Player)"),
 		new("ACTOR_NPC_HERUGAA", "Houndoom"),
 		new("ACTOR_NPC_HIIDORAN", "Heatran"),
 		new("ACTOR_NPC_HIMEGUMA", "Teddiursa"),
@@ -296,6 +296,20 @@ internal static class Common
 		new("FACE_TEARY_EYED", "Teary-Eyed"),
 		new("FACE_WORRIED", "Worried")
 	]);
+
+	public static int AnimationSum = 0;
+	public static int ArgumentSum = 0;
+	public static int ArrayAccessorSum = 0;
+	public static int ConditionalSum = 0;
+	public static int DialogueSum = 0;
+	public static int IdentifierSum = 0;
+	public static int LabelSum = 0;
+	public static int NodeSum = 0;
+	public static int SwitchSum = 0;
+	public static int TemplateSum = 0;
+	public static int TokenSum = 0;
+
+	public static List<string> Identifiers = [];
 
 	public static void Concurrent(Action callback) => Application.Current.Dispatcher.Invoke(callback);
 

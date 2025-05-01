@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using static ES2MD.Common;
 
 namespace ES2MD;
 
@@ -24,21 +25,21 @@ internal partial class ESTree
 	{
 		_name = string.IsNullOrWhiteSpace(_name) ? IndexRegex().Match(fileData).Groups[1].Value : _name;
 
-		var matches1 = SimpleTreeRegex().Matches(fileData);
-		var matches2 = ComplexTreeRegex().Matches(fileData);
-
-		foreach (Match match in matches1)
+		var split = ComplexTreeRegex().Split(fileData);
+		
+		for (int i = 1; i < split.Count(); i += 2)
 		{
-			ESAnimation animation = new();
-			if (animation.Construct(match.Groups[2].Value, match.Groups[1].Value))
-				Animations.Add(animation);
-		}
+			var matches = BodyRegex().Matches(split[i + 1]);
+			if (matches.Count == 0)
+				continue;
 
-		foreach (Match match in matches2)
-		{
-			ESAnimation animation = new(match.Groups[2].Value);
-			if (animation.Construct(match.Groups[3].Value, match.Groups[1].Value))
+			ESAnimation animation = new(matches[0].Groups[1].Value.Trim());
+
+			if (animation.Construct(matches[0].Groups[2].Value.Trim(), split[i].Trim()))
+			{
+				AnimationSum++;
 				Animations.Add(animation);
+			}
 		}
 
 		return true;
@@ -52,11 +53,12 @@ internal partial class ESTree
 
 	public override string ToString() => $"{string.Join("\n", Animations.Select(anim => anim.ToString()))}";
 
-	[GeneratedRegex(@"def\s*?(\d+)\s*?for\s*?(.+?){(.+)}")]
+	[GeneratedRegex(@"def\s*(\d+)\s*(?:for\s*)*")]
 	private static partial Regex ComplexTreeRegex();
 
-	[GeneratedRegex(@"def\s*?(\d+)\s*?{(.+)}")]
-	private static partial Regex SimpleTreeRegex();
+	[GeneratedRegex(@"\s*(.*?)\{(.+)")]
+	private static partial Regex BodyRegex();
+
 	[GeneratedRegex(@"def (\d+)")]
 	private static partial Regex IndexRegex();
 }
