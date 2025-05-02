@@ -27,7 +27,7 @@ internal partial class ESTree
 
 		var split = ComplexTreeRegex().Split(fileData);
 		
-		for (int i = 1; i < split.Count(); i += 2)
+		for (int i = 1; i < split.Length; i += 2)
 		{
 			var matches = BodyRegex().Matches(split[i + 1]);
 			if (matches.Count == 0)

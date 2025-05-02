@@ -99,7 +99,18 @@ Tokens: {TokenSum:N0}";
 
 	private void ProcessToMarkdown(ESTree tree)
 	{
+		if (!Directory.Exists($"Syntax Trees/"))
+			Directory.CreateDirectory($"Syntax Trees/");
 		File.WriteAllText($"Syntax Trees/{tree.Name}.txt", $"{tree}");
+
+		MarkdownState mdState = new();
+
+		foreach (ESNode node in tree.Animations[0].Nodes)
+			mdState.Progress(node);
+
+		if (!Directory.Exists($"Markdown/"))
+			Directory.CreateDirectory($"Markdown/");
+		mdState.Export($"Markdown/{tree.Name}.txt");
 	}
 
 	[GeneratedRegex(@"//.*")]

@@ -53,7 +53,7 @@ internal partial class ESAnimation
 			thisData += val + " ";
 			if (val.Contains('{'))
 				braceCount += val.AsSpan().Count('{');
-			if (val.Contains("}"))
+			if (val.Contains('}'))
 			{
 				braceCount -= val.AsSpan().Count('}');
 				if (braceCount == 0)
@@ -63,7 +63,7 @@ internal partial class ESAnimation
 					continue;
 				}
 			}
-			if (val.Contains(";") && braceCount == 0)
+			if (val.Contains(';') && braceCount == 0)
 			{
 				MakeNode(thisData);
 				thisData = string.Empty;

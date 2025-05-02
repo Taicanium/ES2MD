@@ -12,7 +12,7 @@ namespace ES2MD
 			Else,
 		}
 
-		public ESNode ConditionalValue { get; set; }
+		public ESNode? ConditionalValue { get; set; }
 
 		private string? _comparison;
 		private ConditionalType? _condition;
@@ -30,10 +30,10 @@ namespace ES2MD
 
 		public ESConditional(string value, int indent) : base(value, ESTokenType.Conditional, indent)
 		{
-			var matches = Regex.Matches(value.Trim(), @"\((.+)\)");
+			var matches = ComparisonRegex().Matches(value.Trim());
 			Comparison = matches.Count > 0 ? matches[0].Groups[1].Value.Trim() : null;
 
-			matches = Regex.Matches(value.Trim(), @"^(elseif|if|else)");
+			matches = ConditionRegex().Matches(value.Trim());
 			Condition = matches.Count > 0 ? matches[0].Groups[1].Value switch
 			{
 				"if" => ConditionalType.If,
@@ -42,7 +42,7 @@ namespace ES2MD
 				_ => ConditionalType.None,
 			} : null;
 
-			var valMatch = Regex.Match(value.Trim(), @"{(.*)}");
+			var valMatch = ValueRegex().Match(value.Trim());
 
 			ConditionalValue = new(Indent + 1);
 			ConditionalValue.Parse(valMatch.Groups[1].Value);
@@ -50,5 +50,13 @@ namespace ES2MD
 		
 		public override string ToString() => $@"{new string('\t', Indent)}Conditional
 {new string('\t', Indent + 1)}Type: {Condition}";
+
+		[GeneratedRegex(@"^(elseif|if|else)")]
+		private static partial Regex ConditionRegex();
+
+		[GeneratedRegex(@"\((.+)\)")]
+		private static partial Regex ComparisonRegex();
+		[GeneratedRegex(@"{(.*)}")]
+		private static partial Regex ValueRegex();
 	}
 }

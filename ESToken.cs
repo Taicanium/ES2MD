@@ -40,20 +40,20 @@ internal partial class ESToken
 	public ESToken(string value, ESTokenType type)
 	{
 		_tokenType = type;
-		_tokenValue = value;
+		_tokenValue = StripPadding(value);
 
 		if (type == ESTokenType.Identifier)
-			Common.Identifiers.Add(value);
+			Common.Identifiers.Add(StripPadding(value));
 	}
 
 	public ESToken(string value, ESTokenType type, int Indent)
 	{
 		_tokenType = type;
-		_tokenValue = value;
+		_tokenValue = StripPadding(value);
 		_indent = Indent;
 
 		if (type == ESTokenType.Identifier)
-			Common.Identifiers.Add(value);
+			Common.Identifiers.Add(StripPadding(value));
 	}
 
 	private static string StripPadding(string value)
@@ -64,7 +64,7 @@ internal partial class ESToken
 		return value.Trim();
 	}
 
-	public override string ToString() => $"{new string('\t', Indent)}{TokenType}: {StripPadding(TokenValue)}";
+	public override string ToString() => $"{new string('\t', Indent)}{TokenType}: {TokenValue}";
 	[GeneratedRegex(@"^""|""$")]
 	private static partial Regex PaddingRegex();
 }

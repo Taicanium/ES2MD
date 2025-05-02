@@ -41,7 +41,7 @@ internal partial class ESNode
 				braceCount += val.AsSpan().Count('{');
 			if (val.Contains('<'))
 				bracketCount += val.AsSpan().Count('<');
-			if (val.Contains("}"))
+			if (val.Contains('}'))
 			{
 				braceCount -= val.AsSpan().Count('}');
 				if (braceCount == 0)
@@ -51,7 +51,7 @@ internal partial class ESNode
 					continue;
 				}
 			}
-			if (val.Contains(">"))
+			if (val.Contains('>'))
 			{
 				bracketCount -= val.AsSpan().Count('>');
 				if (bracketCount == 0)
@@ -61,7 +61,7 @@ internal partial class ESNode
 					continue;
 				}
 			}
-			if (val.Contains(";") && braceCount == 0)
+			if (val.Contains(';') && braceCount == 0)
 			{
 				MakeToken(thisData.Trim().Replace(";", string.Empty));
 				thisData = string.Empty;
@@ -87,13 +87,22 @@ internal partial class ESNode
 
 		if (TemplateRegex().IsMatch(data))
 		{
-			Tokens.Add(new ESTemplate(TemplateRegex().Match(data).Groups[1].Value, Indent + 1));
+			var groups = TemplateRegex().Match(data).Groups;
+
+			if (groups[1].Success)
+				Tokens.Add(new ESToken(groups[1].Value, ESToken.ESTokenType.Identifier, Indent + 1));
+
+			Tokens.Add(new ESTemplate(groups[2].Value, Indent + 1));
+
+			if (groups[3].Success)
+				Tokens.Add(new ESToken(groups[3].Value, ESToken.ESTokenType.Argument, Indent + 1));
+
 			TemplateSum++;
 			TokenSum++;
 			return;
 		}
 
-		if (data.StartsWith("@"))
+		if (data.StartsWith('@'))
 		{
 			Tokens.Add(new ESToken(data, ESToken.ESTokenType.Label, Indent));
 			LabelSum++;
@@ -128,7 +137,7 @@ internal partial class ESNode
 				Tokens.Add(new ESToken(diagMatch.Groups[2].Value, ESToken.ESTokenType.Dialogue, Indent + 1));
 				TokenSum++;
 				DialogueSum++;
-				return;
+				continue;
 			}
 
 			if (argument)
@@ -138,6 +147,7 @@ internal partial class ESNode
 				ArgumentSum++;
 				continue;
 			}
+
 			Tokens.Add(new ESToken(arg.Value, ESToken.ESTokenType.Identifier, Indent));
 			TokenSum++;
 			IdentifierSum++;
@@ -165,6 +175,6 @@ internal partial class ESNode
 	[GeneratedRegex(@"^[^{}<>\(\)]+witch.+")]
 	private static partial Regex SwitchRegex();
 
-	[GeneratedRegex(@"(<.+>)")]
+	[GeneratedRegex(@"(\w*)(<.+>)\(*(\w+)*")]
 	private static partial Regex TemplateRegex();
 }
