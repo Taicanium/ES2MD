@@ -26,10 +26,14 @@ internal partial class ESTemplate : ESToken
 		return TokenList.ElementAt(0).Groups[1].Value;
 	}
 
-	public string[] GetTargetIdentifiers()
+	public string[] GetTargetIdentifiers(bool display = true)
 	{
 		var TokenList = TemplateRegex().Matches(TokenValue).ToList();
-		return [.. TokenList.GetRange(1, TokenList.Count - 1).Select(match => match.Groups[1].Value).Select(value => $"\n{new string('\t', Indent + 1)}Identifier: {value}")];
+
+		if (display)
+			return [.. TokenList.GetRange(1, TokenList.Count - 1).Select(match => match.Groups[1].Value).Select(value => $"\n{new string('\t', Indent + 1)}Identifier: {value}")];
+
+		return [.. TokenList.GetRange(1, TokenList.Count - 1).Select(match => match.Groups[1].Value)];
 	}
 
 	public override string ToString() => $@"{new string('\t', Indent)}Template

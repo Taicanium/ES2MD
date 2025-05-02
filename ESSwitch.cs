@@ -23,11 +23,29 @@ internal partial class ESSwitch : ESToken
 
 	public ESSwitch(string value, int Indent) : base(value, ESTokenType.Switch, Indent)
 	{
-		var CaseMatches = CaseRegex().Matches(TokenValue);
+		var thisData = string.Empty;
+		int braceCount = 0;
 
-		foreach (Match Case in CaseMatches)
+		for (int i = 1; i < value.Length; i++)
 		{
-			Cases.Add(new(Case.Value, Indent + 1));
+			thisData += value[i];
+			if (value[i].Equals('{'))
+			{
+				braceCount++;
+				if (braceCount == 1)
+					thisData = string.Empty;
+			}
+			if (value[i].Equals('}'))
+			{
+				braceCount--;
+				if (braceCount == 1)
+				{
+					Cases.Add(new(thisData, Indent + 1));
+					thisData = string.Empty;
+				}
+				if (braceCount == 0)
+					return;
+			}
 		}
 	}
 
@@ -46,7 +64,7 @@ internal partial class ESSwitch : ESToken
 		return $"{new string('\t', Indent)}Switch:\n{new string('\t', Indent + 1)}Variable: {GetTargetVariable()}\n{GetCases()}";
 	}
 
-	[GeneratedRegex(@"case\s*?\d+\s*?:\s*?.+?}|default\s*?:\s*?.+?}")]
+	[GeneratedRegex(@"((case|default).*?{.*?})(?=case|default)*")]
 	private static partial Regex CaseRegex();
 
 	[GeneratedRegex(@"\((\s*.+?\s*)\)\s*?{")]

@@ -35,6 +35,9 @@ namespace ES2MD
 				case "SetEffect":
 					if (!effects.TryGetValue(argument, out Effect))
 						Effect = null;
+
+					if (EffectActor is not null)
+						History[^2] += $"{Effect}";
 					break;
 				case "message_SetFace":
 				case "message_SetFaceOnly":
@@ -113,12 +116,19 @@ namespace ES2MD
 						ProcessDialogue(cases[0].CaseValue.Tokens[0].TokenValue);
 					break;
 				case ESToken.ESTokenType.Template:
-					if (Identifier?.Equals("message_SetEffect") is true)
+					if (Identifier?.Equals("SetEffect") is true)
 					{
-						var identifiers = ((ESTemplate)input).GetTargetIdentifiers();
-						if (!actors.TryGetValue(identifiers[1], out EffectActor))
-							EffectActor = null;
+						var identifiers = ((ESTemplate)input).GetTargetIdentifiers(false);
+						if (identifiers.Length > 0 && actors.TryGetValue(identifiers[0], out EffectActor))
+						{
+							History.Add($"{EffectActor}: ");
+							History.Add(string.Empty);
+						}
 					}
+					break;
+				default:
+					History.Add($"[//]: # ({input.TokenValue})");
+					History.Add(string.Empty);
 					break;
 			}
 

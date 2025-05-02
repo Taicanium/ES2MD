@@ -9,6 +9,7 @@ namespace ES2MD;
 /// </summary>
 internal partial class ESNode
 {
+	private bool argument = false;
 	private int _indent = 0;
 	private List<ESToken> _tokens;
 
@@ -33,37 +34,41 @@ internal partial class ESNode
 		int bracketCount = 0;
 		string thisData = string.Empty;
 
-		foreach (Match match in matches)
+		var val = tokenData;
+
+		if (val.Contains("message_SwitchMenu"))
+			;
+
+		for (int i = 0; i < val.Length; i++)
 		{
-			var val = match.Groups[1].Value;
-			thisData += val + " ";
-			if (val.Contains('{'))
-				braceCount += val.AsSpan().Count('{');
-			if (val.Contains('<'))
-				bracketCount += val.AsSpan().Count('<');
-			if (val.Contains('}'))
+			thisData += val[i];
+			if (val[i].Equals('{'))
+				braceCount++;
+			if (val[i].Equals('<'))
+				bracketCount++;
+			if (val[i].Equals('}'))
 			{
-				braceCount -= val.AsSpan().Count('}');
-				if (braceCount == 0)
+				braceCount--;
+				if (braceCount == 0 && bracketCount == 0)
 				{
 					MakeToken(thisData.Trim());
 					thisData = string.Empty;
 					continue;
 				}
 			}
-			if (val.Contains('>'))
+			if (val[i].Equals('>'))
 			{
-				bracketCount -= val.AsSpan().Count('>');
-				if (bracketCount == 0)
+				bracketCount--;
+				if (braceCount == 0 && bracketCount == 0)
 				{
 					MakeToken(thisData.Trim());
 					thisData = string.Empty;
 					continue;
 				}
 			}
-			if (val.Contains(';') && braceCount == 0)
+			if (val[i].Equals(';') && braceCount == 0 && bracketCount == 0)
 			{
-				MakeToken(thisData.Trim().Replace(";", string.Empty));
+				MakeToken(thisData.Trim());
 				thisData = string.Empty;
 				continue;
 			}
@@ -79,34 +84,19 @@ internal partial class ESNode
 	{
 		if (SwitchRegex().IsMatch(data))
 		{
+			if (data.Contains("PROCESS_SPECIAL"))
+			{
+				Tokens.Add(new ESToken($"Jump-switches to-be-implemented", ESToken.ESTokenType.Unknown, Indent));
+				SwitchSum++;
+				TokenSum++;
+				argument = false;
+				return;
+			}
+
 			Tokens.Add(new ESSwitch(data, Indent));
 			SwitchSum++;
 			TokenSum++;
-			return;
-		}
-
-		if (TemplateRegex().IsMatch(data))
-		{
-			var groups = TemplateRegex().Match(data).Groups;
-
-			if (groups[1].Success)
-				Tokens.Add(new ESToken(groups[1].Value, ESToken.ESTokenType.Identifier, Indent + 1));
-
-			Tokens.Add(new ESTemplate(groups[2].Value, Indent + 1));
-
-			if (groups[3].Success)
-				Tokens.Add(new ESToken(groups[3].Value, ESToken.ESTokenType.Argument, Indent + 1));
-
-			TemplateSum++;
-			TokenSum++;
-			return;
-		}
-
-		if (data.StartsWith('@'))
-		{
-			Tokens.Add(new ESToken(data, ESToken.ESTokenType.Label, Indent));
-			LabelSum++;
-			TokenSum++;
+			argument = false;
 			return;
 		}
 
@@ -115,6 +105,37 @@ internal partial class ESNode
 			Tokens.Add(new ESConditional(data, Indent));
 			ConditionalSum++;
 			TokenSum++;
+			argument = false;
+			return;
+		}
+
+		if (TemplateRegex().IsMatch(data))
+		{
+			var groups = TemplateRegex().Match(data).Groups;
+
+			if (groups[1].Success && groups[1].Value.Trim().Length > 0)
+				Tokens.Add(new ESToken(groups[1].Value, ESToken.ESTokenType.Identifier, Indent));
+
+			if (groups[2].Success && groups[2].Value.Trim().Length > 0)
+				Tokens.Add(new ESToken(groups[2].Value, ESToken.ESTokenType.Identifier, Indent + 1));
+
+			Tokens.Add(new ESTemplate(groups[3].Value, Indent + 1));
+
+			if (groups[4].Success && groups[4].Value.Trim().Length > 0)
+				Tokens.Add(new ESToken(groups[4].Value, ESToken.ESTokenType.Argument, Indent + 1));
+
+			TemplateSum++;
+			TokenSum++;
+			argument = true;
+			return;
+		}
+
+		if (data.StartsWith('@'))
+		{
+			Tokens.Add(new ESToken(data, ESToken.ESTokenType.Label, Indent));
+			LabelSum++;
+			TokenSum++;
+			argument = false;
 			return;
 		}
 
@@ -123,11 +144,11 @@ internal partial class ESNode
 			Tokens.Add(new ESArrayAccessor(data, Indent));
 			ArrayAccessorSum++;
 			TokenSum++;
+			argument = false;
 			return;
 		}
 
 		var argMatches = ArgumentRegex().Matches(data);
-		bool argument = false;
 		foreach (Match arg in argMatches)
 		{
 			var val = arg.Value;
@@ -153,11 +174,13 @@ internal partial class ESNode
 			IdentifierSum++;
 			argument = true;
 		}
+
+		argument = false;
 	}
 
 	public override string ToString() => $"{string.Join("\n", Tokens.Select(token => token.ToString()))}";
 
-	[GeneratedRegex(@"\w+(?:=*""+[^""]+?""+)*")]
+	[GeneratedRegex(@"[\.\w]+(?:=*""+[^""]+?""+)*")]
 	private static partial Regex ArgumentRegex();
 
 	[GeneratedRegex(@"[$\w\.]+\s*?\[\s*?[\w\.]+\s*?\]\s+=\s*?[\w\.]+")]
@@ -172,9 +195,9 @@ internal partial class ESNode
 	[GeneratedRegex(@"(\S+)")]
 	private static partial Regex SpaceRegex();
 
-	[GeneratedRegex(@"^[^{}<>\(\)]+witch.+")]
+	[GeneratedRegex(@"[^{}<>\(\)]+witch.+?\{.*?\}")]
 	private static partial Regex SwitchRegex();
 
-	[GeneratedRegex(@"(\w*)(<.+>)\(*(\w+)*")]
+	[GeneratedRegex(@"(\w*)\(*(\w*)(<.+>)\(*(\w*)")]
 	private static partial Regex TemplateRegex();
 }
