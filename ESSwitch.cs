@@ -11,17 +11,7 @@ internal partial class ESSwitch : ESToken
 
 	}
 
-	public ESSwitch(string value) : base(value, ESTokenType.Switch)
-	{
-		var CaseMatches = CaseRegex().Matches(TokenValue);
-
-		foreach (Match Case in CaseMatches)
-		{
-			Cases.Add(new(Case.Value));
-		}
-	}
-
-	public ESSwitch(string value, int Indent) : base(value, ESTokenType.Switch, Indent)
+	public ESSwitch(string value, int Indent = 0) : base(value, ESTokenType.Switch, Indent)
 	{
 		var thisData = string.Empty;
 		int braceCount = 0;

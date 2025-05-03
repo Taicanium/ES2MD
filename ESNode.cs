@@ -16,12 +16,7 @@ internal partial class ESNode
 	public int Indent { get => _indent; private set => _indent = value; }
 	public List<ESToken> Tokens { get => _tokens; private set => _tokens = value; }
 
-	public ESNode()
-	{
-		_tokens = [];
-	}
-
-	public ESNode(int Indent)
+	public ESNode(int Indent = 0)
 	{
 		_tokens = [];
 		_indent = Indent;
@@ -29,15 +24,10 @@ internal partial class ESNode
 
 	public bool Parse(string tokenData)
 	{
-		var matches = SpaceRegex().Matches(tokenData);
 		int braceCount = 0;
 		int bracketCount = 0;
 		string thisData = string.Empty;
-
 		var val = tokenData;
-
-		if (val.Contains("message_SwitchMenu"))
-			;
 
 		for (int i = 0; i < val.Length; i++)
 		{
@@ -191,9 +181,6 @@ internal partial class ESNode
 
 	[GeneratedRegex(@"(\w*?)=*?(""+[^""]+?""+)")]
 	private static partial Regex DialogueRegex();
-
-	[GeneratedRegex(@"(\S+)")]
-	private static partial Regex SpaceRegex();
 
 	[GeneratedRegex(@"[^{}<>\(\)]+witch.+?\{.*?\}")]
 	private static partial Regex SwitchRegex();

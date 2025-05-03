@@ -24,11 +24,7 @@ namespace ES2MD
 		{
 		}
 
-		public ESConditional(string value) : base(value, ESTokenType.Conditional)
-		{
-		}
-
-		public ESConditional(string value, int indent) : base(value, ESTokenType.Conditional, indent)
+		public ESConditional(string value, int indent = 0) : base(value, ESTokenType.Conditional, indent)
 		{
 			var matches = ComparisonRegex().Matches(value.Trim());
 			Comparison = matches.Count > 0 ? matches[0].Groups[1].Value.Trim() : null;

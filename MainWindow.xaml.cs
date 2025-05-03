@@ -97,7 +97,7 @@ Tokens: {TokenSum:N0}";
 		return newTree;
 	}
 
-	private void ProcessToMarkdown(ESTree tree)
+	private static void ProcessToMarkdown(ESTree tree)
 	{
 		if (!Directory.Exists($"Syntax Trees/"))
 			Directory.CreateDirectory($"Syntax Trees/");

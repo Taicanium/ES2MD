@@ -22,12 +22,6 @@ internal partial class ESAnimation
 		_nodes = [];
 	}
 
-	public ESAnimation(int Indent)
-	{
-		_indent = Indent;
-		_nodes = [];
-	}
-
 	public ESAnimation(int Indent, string Target)
 	{
 		_indent = Indent;

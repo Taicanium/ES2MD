@@ -1,12 +1,14 @@
 ﻿using System.IO;
-using static ES2MD.Common;
+using System.Text.RegularExpressions;
+using static ES2MD.Localization;
 
 namespace ES2MD
 {
-	internal class MarkdownState
+	internal partial class MarkdownState
 	{
 		private string? Actor;
 		private int ArgumentIndex = 0;
+		private bool blockQuote = false;
 		private string? Effect;
 		private string? EffectActor;
 		private string? Face;
@@ -17,9 +19,7 @@ namespace ES2MD
 		public bool Export(string filename)
 		{
 			File.WriteAllLines(filename, History);
-
 			Reset();
-
 			return true;
 		}
 
@@ -61,6 +61,18 @@ namespace ES2MD
 
 		private void ProcessDialogue(string input)
 		{
+
+
+			if (Identifier?.Equals("message_Mail") is true)
+			{
+				if (blockQuote)
+					History[^1] += ">";
+				History.Add($">{ProcessTags(input.Trim())}");
+				History.Add(string.Empty);
+				blockQuote = true;
+				return;
+			}
+
 			if (Actor is not null && Face is not null)
 			{
 				History.Add($"`{Actor.Replace($" Name", string.Empty)} {Face}`");
@@ -75,10 +87,10 @@ namespace ES2MD
 			else
 				History.Add($"💬");
 
-			History[^1] += $": \"{input.Trim()}\"";
-
+			History[^1] += $": \"{ProcessTags(input.Trim())}\"";
 			History.Add(string.Empty);
 
+			blockQuote = false;
 			Effect = null;
 			EffectActor = null;
 		}
@@ -92,6 +104,17 @@ namespace ES2MD
 					Face = null;
 					break;
 			}
+		}
+
+		private static string ProcessTags(string input)
+		{
+			foreach (KeyValuePair<string, string> tag in tags)
+				input = input.Replace($"[{tag.Key}]", tag.Value);
+
+			foreach (Match match in TagRegex().Matches(input))
+				input = input.Replace(match.Value, string.Empty);
+
+			return input;
 		}
 
 		private bool Progress(ESToken input)
@@ -121,7 +144,7 @@ namespace ES2MD
 						var identifiers = ((ESTemplate)input).GetTargetIdentifiers(false);
 						if (identifiers.Length > 0 && actors.TryGetValue(identifiers[0], out EffectActor))
 						{
-							History.Add($"{EffectActor}: ");
+							History.Add($"`{EffectActor}`: ");
 							History.Add(string.Empty);
 						}
 					}
@@ -151,5 +174,8 @@ namespace ES2MD
 
 			return true;
 		}
+
+		[GeneratedRegex(@"\[[\w:]+\]")]
+		private static partial Regex TagRegex();
 	}
 }

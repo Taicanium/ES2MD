@@ -13,11 +13,7 @@ internal partial class ESCase : ESToken
 		CaseVariable = "default";
 	}
 
-	public ESCase(string value) : base(value, ESTokenType.Case)
-	{
-	}
-
-	public ESCase(string value, int Indent) : base(value, ESTokenType.Case, Indent)
+	public ESCase(string value, int Indent = 0) : base(value, ESTokenType.Case, Indent)
 	{
 		CaseValue = new(Indent + 1);
 		var valGroups = ValueRegex().Match(value).Groups;

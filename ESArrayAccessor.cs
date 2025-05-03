@@ -8,11 +8,7 @@ internal partial class ESArrayAccessor : ESToken
 	{
 	}
 
-	public ESArrayAccessor(string value) : base(value, ESTokenType.ArrayAccess)
-	{
-	}
-
-	public ESArrayAccessor(string value, int Indent) : base(value, ESTokenType.ArrayAccess, Indent)
+	public ESArrayAccessor(string value, int Indent = 0) : base(value, ESTokenType.ArrayAccess, Indent)
 	{
 	}
 
