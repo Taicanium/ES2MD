@@ -77,6 +77,8 @@ Switches: {SwitchSum:N0}
 Templates: {TemplateSum:N0}
 Tokens: {TokenSum:N0}";
 					});
+
+					SpinWait.SpinUntil(() => false, 10); // To prevent overloading the UI by dispatching the results text too quickly
 				}
 			};
 
