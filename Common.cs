@@ -14,6 +14,7 @@ internal static class Common
 	public static int DialogueSum = 0;
 	public static int IdentifierSum = 0;
 	public static int LabelSum = 0;
+	public static int LoopSum = 0;
 	public static int NodeSum = 0;
 	public static int SwitchSum = 0;
 	public static int TemplateSum = 0;

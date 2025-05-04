@@ -122,16 +122,26 @@ internal partial class MarkdownState
 	{
 		switch (input.TokenType)
 		{
+			case ESToken.ESTokenType.ArrayAccess:
+				break;
 			case ESToken.ESTokenType.Argument:
 				ProcessArgument(input.TokenValue);
 				ArgumentIndex++;
 				return true;
+			case ESToken.ESTokenType.Case:
+				break;
+			case ESToken.ESTokenType.Conditional:
+				break;
 			case ESToken.ESTokenType.Dialogue:
-				ProcessDialogue(input.TokenValue);
+				ProcessDialogue(input.TokenValue.Replace("\\", string.Empty));
 				break;
 			case ESToken.ESTokenType.Identifier:
 				Identifier = input.TokenValue;
 				ProcessIdentifier();
+				break;
+			case ESToken.ESTokenType.Label:
+				break;
+			case ESToken.ESTokenType.Loop:
 				break;
 			case ESToken.ESTokenType.Switch:
 				var sInput = (ESSwitch)input;
@@ -149,6 +159,8 @@ internal partial class MarkdownState
 						History.Add(string.Empty);
 					}
 				}
+				break;
+			case ESToken.ESTokenType.Type:
 				break;
 			default:
 				History.Add($"[//]: # ({input.TokenValue})");

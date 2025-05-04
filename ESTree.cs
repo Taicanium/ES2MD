@@ -51,7 +51,7 @@ internal partial class ESTree
 		return Construct(fileData);
 	}
 
-	public override string ToString() => $"{string.Join("\n", Animations.Select(anim => anim.ToString()))}";
+	public override string ToString() => $"{string.Join("\n", Animations.Select(anim => anim.ToString().Replace($"\n\n", $"\n")))}";
 
 	[GeneratedRegex(@"def\s*(\d+)\s*(?:for\s*)*")]
 	private static partial Regex ComplexTreeRegex();

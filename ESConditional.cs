@@ -18,10 +18,10 @@ internal partial class ESConditional : ESToken
 
 	public ESNode? ConditionalValue { get; set; }
 
-	private string? _comparison;
+	private string _comparison = string.Empty;
 	private ConditionalType? _condition;
 
-	public string? Comparison { get => _comparison; private set => _comparison = value; }
+	public string Comparison { get => _comparison; private set => _comparison = value; }
 	public ConditionalType? Condition { get => _condition; private set => _condition = value; }
 
 	public ESConditional() : base()
@@ -30,10 +30,7 @@ internal partial class ESConditional : ESToken
 
 	public ESConditional(string value, int indent = 0) : base(value, ESTokenType.Conditional, indent)
 	{
-		var matches = ComparisonRegex().Matches(value.Trim());
-		Comparison = matches.Count > 0 ? matches[0].Groups[1].Value.Trim() : null;
-
-		matches = ConditionRegex().Matches(value.Trim());
+		var matches = ConditionRegex().Matches(value.Trim());
 		Condition = matches.Count > 0 ? matches[0].Groups[1].Value switch
 		{
 			"if" => ConditionalType.If,
@@ -42,20 +39,45 @@ internal partial class ESConditional : ESToken
 			_ => ConditionalType.None,
 		} : null;
 
+		if (Condition.Equals(ConditionalType.None))
+			return;
+
+		if (!Condition.Equals(ConditionalType.Else))
+		{
+			int braceCount = 0;
+			var thisData = string.Empty;
+			for (int i = 0; i < value.Length; i++)
+			{
+				var val = value[i];
+				if (val.Equals('('))
+				{
+					braceCount++;
+					thisData = string.Empty;
+				}
+				if (val.Equals(')'))
+				{
+					braceCount--;
+					if (braceCount == 0)
+					{
+						_comparison = thisData.Trim();
+						break;
+					}
+				}
+				thisData += val;
+			}
+		}
+
 		var valMatch = ValueRegex().Match(value.Trim());
 
 		ConditionalValue = new(Indent + 1);
 		ConditionalValue.Parse(valMatch.Groups[1].Value);
 	}
 	
-	public override string ToString() => $@"{new string('\t', Indent)}Conditional: {Condition}
-{ConditionalValue}";
+	public override string ToString() => $"{new string('\t', Indent)}Conditional: {Condition}\n{(_comparison.Equals(string.Empty) ? string.Empty : $"\n{new string('\t', Indent + 1)}Condition: {Comparison}\n")}{ConditionalValue}";
 
 	[GeneratedRegex(@"^(elseif|if|else)")]
 	private static partial Regex ConditionRegex();
 
-	[GeneratedRegex(@"\((.+)\)")]
-	private static partial Regex ComparisonRegex();
 	[GeneratedRegex(@"{(.*)}")]
 	private static partial Regex ValueRegex();
 }

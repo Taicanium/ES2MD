@@ -18,6 +18,7 @@ internal partial class ESToken
 		Dialogue,
 		Identifier,
 		Label,
+		Loop,
 		Switch,
 		Template,
 		Type,
@@ -65,6 +66,7 @@ internal partial class ESToken
 	}
 
 	public override string ToString() => $"{new string('\t', Indent)}{TokenType}: {TokenValue}";
+
 	[GeneratedRegex(@"^""|""$")]
 	private static partial Regex PaddingRegex();
 }

@@ -64,7 +64,7 @@ internal partial class ESNode
 			}
 		}
 
-		if (!string.IsNullOrEmpty(thisData.Trim()))
+		if (!string.IsNullOrWhiteSpace(thisData.Trim()))
 			MakeToken(thisData.Trim());
 
 		return true;
@@ -129,6 +129,14 @@ internal partial class ESNode
 			return;
 		}
 
+		if (LoopRegex().IsMatch(data))
+		{
+			Tokens.Add(new ESLoop(data, Indent));
+			TokenSum++;
+			LoopSum++;
+			return;
+		}
+
 		if (ArrayRegex().IsMatch(data))
 		{
 			Tokens.Add(new ESArrayAccessor(data, Indent));
@@ -142,6 +150,7 @@ internal partial class ESNode
 		foreach (Match arg in argMatches)
 		{
 			var val = arg.Value;
+
 			if (DialogueRegex().IsMatch(val))
 			{
 				var diagMatch = DialogueRegex().Match(val);
@@ -170,7 +179,7 @@ internal partial class ESNode
 
 	public override string ToString() => $"{string.Join("\n", Tokens.Select(token => token.ToString()))}";
 
-	[GeneratedRegex(@"[\.\w]+(?:=*""+[^""]+?""+)*")]
+	[GeneratedRegex(@"[\.\w]+(?:=*""+.+""+)*")]
 	private static partial Regex ArgumentRegex();
 
 	[GeneratedRegex(@"[$\w\.]+\s*?\[\s*?[\w\.]+\s*?\]\s+=\s*?[\w\.]+")]
@@ -179,8 +188,11 @@ internal partial class ESNode
 	[GeneratedRegex(@"^(?:elseif|if|else)\s*?\(*.*?\)*")]
 	private static partial Regex ConditionalRegex();
 
-	[GeneratedRegex(@"(\w*?)=*?(""+[^""]+?""+)")]
+	[GeneratedRegex(@"(\w*?)=*?(""+.+""+)")]
 	private static partial Regex DialogueRegex();
+
+	[GeneratedRegex(@"\w+\s*{.+}")]
+	private static partial Regex LoopRegex();
 
 	[GeneratedRegex(@"^[^{}<>\(\)]+witch.+?\{.*?\}")]
 	private static partial Regex SwitchRegex();

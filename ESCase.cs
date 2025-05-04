@@ -24,7 +24,7 @@ internal partial class ESCase : ESToken
 		var varGroups = VariableRegex().Match(value).Groups;
 
 		CaseVariable = varGroups[1].Value.Trim();
-		if (string.IsNullOrEmpty(CaseVariable))
+		if (string.IsNullOrWhiteSpace(CaseVariable))
 			CaseVariable = "default";
 
 		CaseValue.Parse(valGroups[1].Value.Trim());

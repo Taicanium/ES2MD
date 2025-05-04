@@ -57,6 +57,7 @@ public partial class MainWindow : Window
 				FileCount = 0;
 				IdentifierSum = 0;
 				LabelSum = 0;
+				LoopSum = 0;
 				NodeSum = 0;
 				SwitchSum = 0;
 				TemplateSum = 0;
@@ -93,6 +94,7 @@ Conditionals: {ConditionalSum:N0}
 Dialogues: {DialogueSum:N0}
 Identifiers: {IdentifierSum:N0}
 Labels: {LabelSum:N0}
+Loops: {LoopSum:N0}
 Nodes: {NodeSum:N0}
 Switches: {SwitchSum:N0}
 Templates: {TemplateSum:N0}
