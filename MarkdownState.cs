@@ -79,6 +79,7 @@ internal partial class MarkdownState
 			History.Add($"`{Actor.Replace($" Name", string.Empty)} {Face}`");
 			if (Effect is not null)
 				History[^1] += $" {Effect}";
+			History.Add(string.Empty);
 		}
 		else if (Effect is not null)
 			History.Add($"{Effect}");
@@ -89,6 +90,7 @@ internal partial class MarkdownState
 			History.Add($"💬");
 
 		History[^1] += $": \"{ProcessTags(input.Trim())}\"";
+		History.Add(string.Empty);
 		History.Add(string.Empty);
 
 		blockQuote = false;
