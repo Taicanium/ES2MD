@@ -2,6 +2,10 @@
 
 namespace ES2MD;
 
+/// <summary>
+/// Any of the case statements associated with a higher-level switch statement.
+/// Like conditionals, these tokens can uniquely contain other complete EXPS commands inside them.
+/// </summary>
 internal partial class ESCase : ESToken
 {
 	public ESNode CaseValue { get; set; }

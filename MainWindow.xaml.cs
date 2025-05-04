@@ -12,6 +12,7 @@ namespace ES2MD;
 /// </summary>
 public partial class MainWindow : Window
 {
+	private int FileCount = 0;
 	private readonly List<ESTree> Trees = [];
 
 	public MainWindow()
@@ -40,16 +41,20 @@ public partial class MainWindow : Window
 
 		if (openFileDialog.ShowDialog() is true)
 		{
-			BackgroundWorker worker = new();
-			worker.DoWork += (_, _) =>
+			BackgroundWorker fileWorker = new();
+			BackgroundWorker displayWorker = new()
 			{
-				int fileCount = 0;
+				WorkerSupportsCancellation = true,
+			};
 
+			fileWorker.DoWork += (_, _) =>
+			{
 				AnimationSum = 0;
 				ArgumentSum = 0;
 				ArrayAccessorSum = 0;
 				ConditionalSum = 0;
 				DialogueSum = 0;
+				FileCount = 0;
 				IdentifierSum = 0;
 				LabelSum = 0;
 				NodeSum = 0;
@@ -61,9 +66,25 @@ public partial class MainWindow : Window
 				{
 					Concurrent(() => {
 						ProcessESFile(file);
-						fileCount++;
+						FileCount++;
+					});
 
-						ResultsBox.Text = $@"Files: {fileCount}
+					SpinWait.SpinUntil(() => false, 5);
+				}
+			};
+
+			fileWorker.RunWorkerCompleted += (_, _) =>
+			{
+				displayWorker.CancelAsync();
+			};
+
+			displayWorker.DoWork += (sender, _) =>
+			{
+				while (((BackgroundWorker?)sender)?.CancellationPending is false)
+				{
+					Concurrent(() =>
+					{
+						ResultsBox.Text = $@"Files: {FileCount:N0}
 
 Animations: {AnimationSum:N0}
 Arguments: {ArgumentSum:N0}
@@ -78,11 +99,12 @@ Templates: {TemplateSum:N0}
 Tokens: {TokenSum:N0}";
 					});
 
-					SpinWait.SpinUntil(() => false, 10); // To prevent overloading the UI by dispatching the results text too quickly
+					SpinWait.SpinUntil(() => false, 40); // To prevent overloading the UI by dispatching the results text too quickly.
 				}
 			};
 
-			worker.RunWorkerAsync();
+			fileWorker.RunWorkerAsync();
+			displayWorker.RunWorkerAsync();
 		}
 	}
 

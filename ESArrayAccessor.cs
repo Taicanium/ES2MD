@@ -2,6 +2,10 @@
 
 namespace ES2MD;
 
+/// <summary>
+/// An object of type ESArrayAccessor corresponds to lines of format "$A[b] = C", an array assignment.
+/// Embedded array accessors, such as variables used in switch stateents, are handled elsewhere.
+/// </summary>
 internal partial class ESArrayAccessor : ESToken
 {
 	public ESArrayAccessor() : base()

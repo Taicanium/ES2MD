@@ -2,6 +2,10 @@
 
 namespace ES2MD;
 
+/// <summary>
+/// Switch statements allow for easier selection of actions to take among many options assignable to a single variable.
+/// Each option is handled as an ESCase.
+/// </summary>
 internal partial class ESSwitch : ESToken
 {
 	public List<ESCase> Cases { get; } = [];

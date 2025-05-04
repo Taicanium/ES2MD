@@ -182,7 +182,7 @@ internal partial class ESNode
 	[GeneratedRegex(@"(\w*?)=*?(""+[^""]+?""+)")]
 	private static partial Regex DialogueRegex();
 
-	[GeneratedRegex(@"[^{}<>\(\)]+witch.+?\{.*?\}")]
+	[GeneratedRegex(@"^[^{}<>\(\)]+witch.+?\{.*?\}")]
 	private static partial Regex SwitchRegex();
 
 	[GeneratedRegex(@"(\w*)\(*(\w*)(<.+>)\(*(\w*)")]
