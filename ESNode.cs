@@ -176,7 +176,7 @@ internal partial class ESNode(int Indent = 0)
 	[GeneratedRegex(@"(\w*?)=*?(""+.+""+)")]
 	private static partial Regex DialogueRegex();
 
-	[GeneratedRegex(@"\w+\s*{.+}")]
+	[GeneratedRegex(@"forever\s*{.+}")]
 	private static partial Regex LoopRegex();
 
 	[GeneratedRegex(@"^[^{}<>\(\)]+witch.+?\{.*?\}")]

@@ -20,8 +20,6 @@ internal static class Common
 	public static int TemplateSum = 0;
 	public static int TokenSum = 0;
 
-	public static List<string> Identifiers = [];
-
 	public static void Concurrent(Action callback) => Application.Current.Dispatcher.Invoke(callback);
 
 	public static T Concurrent<T>(Func<T> callback) => Application.Current.Dispatcher.Invoke(callback);

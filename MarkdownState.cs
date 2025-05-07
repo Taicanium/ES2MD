@@ -13,19 +13,23 @@ internal partial class MarkdownState
 	private int ArgumentIndex = 0;
 	private bool blockQuote = false;
 	private int CaseDepth = 0;
+	private int ConditionalDepth = 0;
 	private string? Effect;
 	private string? EffectActor;
 	private string? Face;
 	private readonly Dictionary<string, string> Faces = [];
 	private string? Identifier;
 	private readonly List<string> History = [];
+	private int LoopDepth = 0;
 
-	private void AddHistory(string input)
+	private void AddHistory(string input, int blankLines)
 	{
 		string bullets = string.Empty;
-		for (int i = 0; i < CaseDepth; i++)
+		for (int i = 0; i < CaseDepth + LoopDepth + ConditionalDepth; i++)
 			bullets += "  * ";
 		History.Add($"{bullets}{input}");
+		for (int i = 0; i < blankLines; i++)
+			History.Add(string.Empty);
 	}
 
 	private static string AssertLabel(string input) => input.Replace("@", string.Empty).Replace("label", string.Empty).Replace("_", string.Empty).Replace(";", string.Empty);
@@ -43,9 +47,7 @@ internal partial class MarkdownState
 		{
 			case "jump":
 				var label = AssertLabel(argument);
-				AddHistory($"*Jump to [anchor {label}](#{label})*");
-				History.Add(string.Empty);
-				History.Add(string.Empty);
+				AddHistory($"*Jump to [anchor {label}](#{label})*", 2);
 				break;
 			case "message_SetActor":
 				Actor = null;
@@ -83,8 +85,7 @@ internal partial class MarkdownState
 
 				if (EffectActor is null && Effect is not null)
 				{
-					AddHistory($"{Effect}");
-					History.Add(string.Empty);
+					AddHistory($"{Effect}", 1);
 				}
 				break;
 		}
@@ -96,7 +97,7 @@ internal partial class MarkdownState
 		{
 			if (blockQuote)
 				History[^1] += ">";
-			AddHistory($">{ProcessTags(input.Trim())}");
+			History.Add($">{ProcessTags(input.Trim())}");
 			History.Add(string.Empty);
 			blockQuote = true;
 			return;
@@ -104,24 +105,16 @@ internal partial class MarkdownState
 
 		if (Actor is not null && Face is not null)
 		{
-			AddHistory($"`{Actor.Replace($" Name", string.Empty)} {Face}`");
+			AddHistory($"`{Actor.Replace($" Name", string.Empty)} {Face}`", 1);
 			if (Effect is not null)
-				History[^1] += $" {Effect}";
-			History.Add(string.Empty);
+				History[^2] += $" {Effect}";
 		}
 		else if (Effect is not null)
-		{
-			AddHistory($"{Effect}");
-			History.Add(string.Empty);
-		}
+			AddHistory($"{Effect}", 1);
 
 		var afterTags = ProcessTags(input.Trim());
 		if (!afterTags.Equals(string.Empty))
-		{
-			AddHistory($"`{Actor ?? "💬"}`: \"{afterTags}\"");
-			History.Add(string.Empty);
-			History.Add(string.Empty);
-		}
+			AddHistory($"`{Actor ?? "💬"}`: \"{afterTags}\"", 2);
 
 		blockQuote = false;
 		Effect = null;
@@ -136,16 +129,26 @@ internal partial class MarkdownState
 				Actor = null;
 				Face = null;
 				break;
+			case "screen_FadeIn":
+			case "screen_FadeInAll":
+			case "screen2_FadeIn":
+			case "screen2_FadeInAll":
+			case "screen_FadeOut":
+			case "screen_FadeOutAll":
+			case "screen2_FadeOut":
+			case "screen2_FadeOutAll":
+			case "screen_WhiteOut":
+				AddHistory("* * *", 2);
+				break;
+			default:
+				break;
 		}
 	}
 
 	private bool ProcessSwitchCase(ESCase Case)
 	{
 		if (Case.MenuDepth != CaseDepth)
-		{
-			AddHistory($"*If the player chooses \"{Case.CaseVariable}\":*");
-			History.Add(string.Empty);
-		}
+			AddHistory($"*If the player chooses \"{Case.CaseVariable}\":*", 1);
 
 		int depthTemp = CaseDepth;
 		CaseDepth = Case.MenuDepth;
@@ -185,6 +188,22 @@ internal partial class MarkdownState
 			case ESToken.ESTokenType.Case:
 				break;
 			case ESToken.ESTokenType.Conditional:
+				var cInput = (ESConditional)input;
+				if (cInput.Condition == ESConditional.ConditionalType.Else)
+					AddHistory("*Else:*", 2);
+				else if (cInput.Comparison.Contains("BIT_FLAG"))
+					AddHistory("*If certain conditions are met:*", 2);
+				else if (cInput.Comparison.Contains("SCENARIO_") &&
+					cInput.Comparison.Contains(">=") || cInput.Comparison.Contains("=="))
+					AddHistory("*If the player has progressed far enough:*", 2);
+				else if (cInput.Comparison.Contains("SCENARIO_") && cInput.Comparison.Contains('<'))
+					AddHistory("*If the player has not progressed far enough:*", 2);
+				else
+					AddHistory("*If certain conditions are met:*", 2);
+				ConditionalDepth++;
+				if (!Progress(cInput.ConditionalValue))
+					return false;
+				ConditionalDepth--;
 				break;
 			case ESToken.ESTokenType.Dialogue:
 				ProcessDialogue(input.TokenValue.Replace("\\", string.Empty));
@@ -195,11 +214,15 @@ internal partial class MarkdownState
 				break;
 			case ESToken.ESTokenType.Label:
 				var label = AssertLabel(input.TokenValue);
-				AddHistory($"*Anchor: <a name=\"{label}\"></a>{label}*");
-				History.Add(string.Empty);
-				History.Add(string.Empty);
+				AddHistory($"*Anchor: <a name=\"{label}\"></a>{label}*", 2);
 				break;
 			case ESToken.ESTokenType.Loop:
+				var lInput = (ESLoop)input;
+				AddHistory("*Loop forever:*", 2);
+				LoopDepth++;
+				if (!Progress(lInput.content))
+					return false;
+				LoopDepth--;
 				break;
 			case ESToken.ESTokenType.Switch:
 				var sInput = (ESSwitch)input;
@@ -226,8 +249,7 @@ internal partial class MarkdownState
 			case ESToken.ESTokenType.Type:
 				break;
 			default:
-				AddHistory($"[//]: # ({input.TokenValue})");
-				History.Add(string.Empty);
+				AddHistory($"[//]: # ({input.TokenValue})", 1);
 				break;
 		}
 

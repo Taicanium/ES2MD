@@ -7,8 +7,8 @@ namespace ES2MD;
 /// </summary>
 internal partial class ESLoop : ESToken
 {
-	readonly ESNode content;
-	readonly string condition;
+	public readonly ESNode content;
+	public readonly string condition;
 
 	public ESLoop() : base()
 	{
@@ -20,14 +20,14 @@ internal partial class ESLoop : ESToken
 	{
 		var match = LoopRegex().Match(value);
 
-		condition = match.Groups[1].Value;
+		condition = "forever";
 		content = new(Indent + 1);
 
-		if (!content.Parse(match.Groups[2].Value))
+		if (!content.Parse(match.Groups[1].Value))
 			content = new();
 	}
 
-	[GeneratedRegex(@"(\w+)\s*?{(.+)}")]
+	[GeneratedRegex(@"forever\s*?{(.+)}")]
 	private static partial Regex LoopRegex();
 
 	public override string ToString() => $@"{new string('\t', Indent)}Loop: {condition}

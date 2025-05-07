@@ -43,9 +43,6 @@ internal partial class ESToken
 	{
 		_tokenType = type;
 		_tokenValue = StripPadding(value);
-
-		if (type == ESTokenType.Identifier)
-			Common.Identifiers.Add(StripPadding(value));
 	}
 
 	public ESToken(string value, ESTokenType type, int Indent)
@@ -53,9 +50,6 @@ internal partial class ESToken
 		_tokenType = type;
 		_tokenValue = StripPadding(value);
 		_indent = Indent;
-
-		if (type == ESTokenType.Identifier)
-			Common.Identifiers.Add(StripPadding(value));
 	}
 
 	private static string StripPadding(string value)

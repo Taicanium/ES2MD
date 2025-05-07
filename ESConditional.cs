@@ -16,7 +16,7 @@ internal partial class ESConditional : ESToken
 		Else,
 	}
 
-	public ESNode? ConditionalValue { get; set; }
+	public ESNode ConditionalValue { get; set; } = new();
 
 	private string _comparison = string.Empty;
 	private ConditionalType? _condition;

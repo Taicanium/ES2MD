@@ -14,7 +14,7 @@
 				<TextBox Height="25" Width="300" IsReadOnly="True" x:Name="FileNameBox"/>
 			</StackPanel>
 
-			<Border BorderBrush="DarkGray" BorderThickness="1" Height="265" Margin="0,20">
+			<Border BorderBrush="DarkGray" BorderThickness="1" Height="250" Margin="0,20">
 				<TextBlock Background="White" IsEnabled="False" x:Name="ResultsBox"/>
 			</Border>
 

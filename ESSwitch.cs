@@ -67,7 +67,7 @@ internal partial class ESSwitch : ESToken
 
 				if (orderCount == 1)
 				{
-					Cases.Add(new(Regex.Replace(thisData.Replace(": default:", ":"), @": case .*?:", ":"),
+					Cases.Add(new(DoubleCaseRegex().Replace(thisData.Replace(": default:", ":"), ":"),
 						Indent + 1, MenuDepth));
 					thisData = string.Empty;
 				}
@@ -100,4 +100,7 @@ internal partial class ESSwitch : ESToken
 
 	[GeneratedRegex(@"\((\s*.+?\s*)\)\s*?{")]
 	private static partial Regex VariableRegex();
+
+	[GeneratedRegex(@": case .*?:")]
+	private static partial Regex DoubleCaseRegex();
 }
