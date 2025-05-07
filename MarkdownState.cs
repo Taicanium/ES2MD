@@ -12,12 +12,23 @@ internal partial class MarkdownState
 	private string? Actor;
 	private int ArgumentIndex = 0;
 	private bool blockQuote = false;
+	private int CaseDepth = 0;
 	private string? Effect;
 	private string? EffectActor;
 	private string? Face;
 	private readonly Dictionary<string, string> Faces = [];
 	private string? Identifier;
 	private readonly List<string> History = [];
+
+	private void AddHistory(string input)
+	{
+		string bullets = string.Empty;
+		for (int i = 0; i < CaseDepth; i++)
+			bullets += "  * ";
+		History.Add($"{bullets}{input}");
+	}
+
+	private static string AssertLabel(string input) => input.Replace("@", string.Empty).Replace("label", string.Empty).Replace("_", string.Empty).Replace(";", string.Empty);
 
 	public bool Export(string filename)
 	{
@@ -30,17 +41,16 @@ internal partial class MarkdownState
 	{
 		switch (Identifier)
 		{
+			case "jump":
+				var label = AssertLabel(argument);
+				AddHistory($"*Jump to [anchor {label}](#{label})*");
+				History.Add(string.Empty);
+				History.Add(string.Empty);
+				break;
 			case "message_SetActor":
 				Actor = null;
 				if (actors.TryGetValue(argument, out Actor))
 					Faces.TryGetValue(Actor, out Face);
-				break;
-			case "SetEffect":
-				if (!effects.TryGetValue(argument, out Effect))
-					Effect = null;
-
-				if (EffectActor is not null)
-					History[^2] += $"{Effect}";
 				break;
 			case "message_SetFace":
 			case "message_SetFaceOnly":
@@ -50,7 +60,8 @@ internal partial class MarkdownState
 						Actor = null;
 					break;
 				}
-				else if (ArgumentIndex == 1)
+				
+				if (ArgumentIndex == 1)
 				{
 					Face = null;
 					if (faces.TryGetValue(argument, out Face) && Actor is not null)
@@ -58,6 +69,23 @@ internal partial class MarkdownState
 					break;
 				}
 
+				break;
+			case "SetEffect":
+				if (int.TryParse(argument, out var _))
+					break;
+
+				var OldEffect = Effect;
+				if (!effects.TryGetValue(argument, out Effect))
+					Effect = OldEffect;
+
+				if (argument.Equals("EFFECT_NONE"))
+					Effect = null;
+
+				if (EffectActor is null && Effect is not null)
+				{
+					AddHistory($"{Effect}");
+					History.Add(string.Empty);
+				}
 				break;
 		}
 	}
@@ -68,7 +96,7 @@ internal partial class MarkdownState
 		{
 			if (blockQuote)
 				History[^1] += ">";
-			History.Add($">{ProcessTags(input.Trim())}");
+			AddHistory($">{ProcessTags(input.Trim())}");
 			History.Add(string.Empty);
 			blockQuote = true;
 			return;
@@ -76,22 +104,24 @@ internal partial class MarkdownState
 
 		if (Actor is not null && Face is not null)
 		{
-			History.Add($"`{Actor.Replace($" Name", string.Empty)} {Face}`");
+			AddHistory($"`{Actor.Replace($" Name", string.Empty)} {Face}`");
 			if (Effect is not null)
 				History[^1] += $" {Effect}";
 			History.Add(string.Empty);
 		}
 		else if (Effect is not null)
-			History.Add($"{Effect}");
+		{
+			AddHistory($"{Effect}");
+			History.Add(string.Empty);
+		}
 
-		if (Actor is not null)
-			History.Add($"`{Actor}`");
-		else
-			History.Add($"💬");
-
-		History[^1] += $": \"{ProcessTags(input.Trim())}\"";
-		History.Add(string.Empty);
-		History.Add(string.Empty);
+		var afterTags = ProcessTags(input.Trim());
+		if (!afterTags.Equals(string.Empty))
+		{
+			AddHistory($"`{Actor ?? "💬"}`: \"{afterTags}\"");
+			History.Add(string.Empty);
+			History.Add(string.Empty);
+		}
 
 		blockQuote = false;
 		Effect = null;
@@ -107,6 +137,28 @@ internal partial class MarkdownState
 				Face = null;
 				break;
 		}
+	}
+
+	private bool ProcessSwitchCase(ESCase Case)
+	{
+		if (Case.MenuDepth != CaseDepth)
+		{
+			AddHistory($"*If the player chooses \"{Case.CaseVariable}\":*");
+			History.Add(string.Empty);
+		}
+
+		int depthTemp = CaseDepth;
+		CaseDepth = Case.MenuDepth;
+
+		if (!Case.PureDialogue || Case.CaseVariable.Equals("default"))
+		{
+			for (int i = 0; i < Case.CaseValue.Tokens.Count; i++)
+				if (!Progress(Case.CaseValue.Tokens[i]))
+					return false;
+		}
+
+		CaseDepth = depthTemp;
+		return true;
 	}
 
 	private static string ProcessTags(string input)
@@ -142,30 +194,39 @@ internal partial class MarkdownState
 				ProcessIdentifier();
 				break;
 			case ESToken.ESTokenType.Label:
+				var label = AssertLabel(input.TokenValue);
+				AddHistory($"*Anchor: <a name=\"{label}\"></a>{label}*");
+				History.Add(string.Empty);
+				History.Add(string.Empty);
 				break;
 			case ESToken.ESTokenType.Loop:
 				break;
 			case ESToken.ESTokenType.Switch:
 				var sInput = (ESSwitch)input;
-				var cases = sInput.Cases;
-				if (cases.Count > 0 && cases[0].CaseValue.Tokens.Count > 0)
-					ProcessDialogue(cases[0].CaseValue.Tokens[0].TokenValue);
+
+				if (sInput.GetTargetVariable().Contains("PROCESS_SPECIAL_GET_HERO_KIND"))
+				{
+					if (!ProcessSwitchCase(sInput.Cases[0]))
+						return false;
+					break;
+				}
+
+				foreach (ESCase Case in sInput.Cases)
+					if (!ProcessSwitchCase(Case))
+						return false;
 				break;
 			case ESToken.ESTokenType.Template:
 				if (Identifier?.Equals("SetEffect") is true)
 				{
 					var identifiers = ((ESTemplate)input).GetTargetIdentifiers(false);
-					if (identifiers.Length > 0 && actors.TryGetValue(identifiers[0], out EffectActor))
-					{
-						History.Add($"`{EffectActor}`: ");
-						History.Add(string.Empty);
-					}
+					if (identifiers.Length > 0)
+						actors.TryGetValue(identifiers[0], out EffectActor);
 				}
 				break;
 			case ESToken.ESTokenType.Type:
 				break;
 			default:
-				History.Add($"[//]: # ({input.TokenValue})");
+				AddHistory($"[//]: # ({input.TokenValue})");
 				History.Add(string.Empty);
 				break;
 		}

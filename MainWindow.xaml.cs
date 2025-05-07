@@ -65,12 +65,20 @@ public partial class MainWindow : Window
 
 				foreach (var file in openFileDialog.FileNames)
 				{
-					Concurrent(() => {
-						ProcessESFile(file);
-						FileCount++;
-					});
+					try
+					{
+						Concurrent(() =>
+						{
+							ProcessESFile(file);
+							FileCount++;
+						});
 
-					SpinWait.SpinUntil(() => false, 5);
+						SpinWait.SpinUntil(() => false, 5);
+					}
+					catch
+					{
+						return;
+					}
 				}
 			};
 

@@ -10,36 +10,73 @@ internal partial class ESSwitch : ESToken
 {
 	public List<ESCase> Cases { get; } = [];
 
+	public int MenuDepth = 0;
+
 	public ESSwitch() : base()
 	{
 
 	}
 
-	public ESSwitch(string value, int Indent = 0) : base(value, ESTokenType.Switch, Indent)
+	public ESSwitch(string value, int Indent = 0, int menuDepth = 0) : base(value, ESTokenType.Switch, Indent)
 	{
+		bool colonBrace = false;
+		MenuDepth = menuDepth;
+		int orderCount = 0;
+		bool quote = false;
 		var thisData = string.Empty;
-		int braceCount = 0;
+		bool waitingForCase = false;
 
-		for (int i = 1; i < value.Length; i++)
+		if (GetTargetVariable().Contains("menu", StringComparison.InvariantCultureIgnoreCase))
+			MenuDepth++;
+
+		for (int i = 5; i < value.Length; i++)
 		{
 			thisData += value[i];
-			if (value[i].Equals('{'))
+
+			if (value[i].Equals('"'))
 			{
-				braceCount++;
-				if (braceCount == 1)
-					thisData = string.Empty;
+				colonBrace = false;
+				quote = !quote;
+				continue;
 			}
-			if (value[i].Equals('}'))
+
+			if (thisData.EndsWith("case"))
+				waitingForCase = true;
+
+			if ((value[i].Equals('{') && !colonBrace && !waitingForCase) || (!quote && value[i].Equals(':') && (i > value.Length - 7 || !value[(i + 2)..].StartsWith("case")) && (i > value.Length - 10 || !value[(i + 2)..].StartsWith("default"))))
 			{
-				braceCount--;
-				if (braceCount == 1)
+				colonBrace = true;
+				orderCount++;
+
+				if (!quote && value[i].Equals(':'))
+					waitingForCase = false;
+
+				if (orderCount == 1)
+					thisData = string.Empty;
+
+				continue;
+			}
+
+			if (!waitingForCase && (value[i].Equals('}') || thisData.EndsWith("break;") || thisData.EndsWith("end;") || JumpRegex().IsMatch(thisData)))
+			{
+				colonBrace = false;
+				orderCount--;
+
+				if (orderCount == 0)
+					return;
+
+				if (orderCount == 1)
 				{
-					Cases.Add(new(thisData, Indent + 1));
+					Cases.Add(new(Regex.Replace(thisData.Replace(": default:", ":"), @": case .*?:", ":"),
+						Indent + 1, MenuDepth));
 					thisData = string.Empty;
 				}
-				if (braceCount == 0)
-					return;
+
+				continue;
 			}
+
+			if (char.IsLetterOrDigit(value[i]))
+				colonBrace = false;
 		}
 	}
 
@@ -58,8 +95,8 @@ internal partial class ESSwitch : ESToken
 		return $"{new string('\t', Indent)}Switch:\n{new string('\t', Indent + 1)}Variable: {GetTargetVariable()}\n{GetCases()}";
 	}
 
-	[GeneratedRegex(@"((case|default).*?{.*?})(?=case|default)*")]
-	private static partial Regex CaseRegex();
+	[GeneratedRegex(@"jump @*\w+;$")]
+	private static partial Regex JumpRegex();
 
 	[GeneratedRegex(@"\((\s*.+?\s*)\)\s*?{")]
 	private static partial Regex VariableRegex();

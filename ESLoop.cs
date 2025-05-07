@@ -7,8 +7,8 @@ namespace ES2MD;
 /// </summary>
 internal partial class ESLoop : ESToken
 {
-	ESNode content;
-	string condition;
+	readonly ESNode content;
+	readonly string condition;
 
 	public ESLoop() : base()
 	{

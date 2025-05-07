@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ES2MD"
         mc:Ignorable="d"
 		Background="Beige"
-        Title="ES2MD" Height="400" Width="450">
+        Title="ES2MD" Height="425" Width="400">
     <Grid>
 		<StackPanel Margin="0,25,0,0" HorizontalAlignment="Center">
 			<StackPanel Orientation="Horizontal">
@@ -14,7 +14,7 @@
 				<TextBox Height="25" Width="300" IsReadOnly="True" x:Name="FileNameBox"/>
 			</StackPanel>
 
-			<Border BorderBrush="DarkGray" BorderThickness="1" Height="225" Margin="0,20">
+			<Border BorderBrush="DarkGray" BorderThickness="1" Height="265" Margin="0,20">
 				<TextBlock Background="White" IsEnabled="False" x:Name="ResultsBox"/>
 			</Border>
 

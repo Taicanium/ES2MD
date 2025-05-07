@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using static ES2MD.Common;
+﻿using static ES2MD.Common;
 
 namespace ES2MD;
 

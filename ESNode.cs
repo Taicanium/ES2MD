@@ -7,22 +7,16 @@ namespace ES2MD;
 /// An object of type ESNode corresponds roughly to a line of code in an EXPS file.
 /// A single complete command - whether that be a function call, assignment, or operation - is an ESNode.
 /// </summary>
-internal partial class ESNode
+internal partial class ESNode(int Indent = 0)
 {
 	private bool argument = false;
-	private int _indent = 0;
-	private List<ESToken> _tokens;
+	private int _indent = Indent;
+	private List<ESToken> _tokens = [];
 
 	public int Indent { get => _indent; private set => _indent = value; }
 	public List<ESToken> Tokens { get => _tokens; private set => _tokens = value; }
 
-	public ESNode(int Indent = 0)
-	{
-		_tokens = [];
-		_indent = Indent;
-	}
-
-	public bool Parse(string tokenData)
+	public bool Parse(string tokenData, int menuDepth = 0)
 	{
 		int braceCount = 0;
 		int bracketCount = 0;
@@ -41,7 +35,7 @@ internal partial class ESNode
 				braceCount--;
 				if (braceCount == 0 && bracketCount == 0)
 				{
-					MakeToken(thisData.Trim());
+					MakeToken(thisData.Trim(), menuDepth);
 					thisData = string.Empty;
 					continue;
 				}
@@ -51,39 +45,30 @@ internal partial class ESNode
 				bracketCount--;
 				if (braceCount == 0 && bracketCount == 0)
 				{
-					MakeToken(thisData.Trim());
+					MakeToken(thisData.Trim(), menuDepth);
 					thisData = string.Empty;
 					continue;
 				}
 			}
 			if (val[i].Equals(';') && braceCount == 0 && bracketCount == 0)
 			{
-				MakeToken(thisData.Trim());
+				MakeToken(thisData.Trim(), menuDepth);
 				thisData = string.Empty;
 				continue;
 			}
 		}
 
 		if (!string.IsNullOrWhiteSpace(thisData.Trim()))
-			MakeToken(thisData.Trim());
+			MakeToken(thisData.Trim(), menuDepth);
 
 		return true;
 	}
 
-	private void MakeToken(string data)
+	private void MakeToken(string data, int menuDepth)
 	{
 		if (SwitchRegex().IsMatch(data))
 		{
-			if (data.Contains("PROCESS_SPECIAL"))
-			{
-				Tokens.Add(new ESToken($"Jump-switches to-be-implemented", ESToken.ESTokenType.Unknown, Indent));
-				SwitchSum++;
-				TokenSum++;
-				argument = false;
-				return;
-			}
-
-			Tokens.Add(new ESSwitch(data, Indent));
+			Tokens.Add(new ESSwitch(data, Indent, menuDepth));
 			SwitchSum++;
 			TokenSum++;
 			argument = false;

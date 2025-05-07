@@ -17,6 +17,7 @@ internal partial class ESToken
 		Conditional,
 		Dialogue,
 		Identifier,
+		JumpSwitch,
 		Label,
 		Loop,
 		Switch,

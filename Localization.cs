@@ -238,7 +238,6 @@ static class Localization
 ]);
 
 	public static Dictionary<string, string> effects = new([
-		new("EFFECT_NONE",""),
 		new("EFFECT_EXCLAMATION_MARK","❗"),
 		new("EFFECT_SHOCKED","〽"),
 		new("EFFECT_SHOCKED_MIRRORED","〽"),
