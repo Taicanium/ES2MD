@@ -17,6 +17,7 @@ internal partial class MarkdownState
 	private string? Effect;
 	private string? EffectActor;
 	private string? Face;
+	private bool Faded;
 	private readonly Dictionary<string, string> Faces = [];
 	private string? Identifier;
 	private readonly List<string> History = [];
@@ -84,9 +85,7 @@ internal partial class MarkdownState
 					Effect = null;
 
 				if (EffectActor is null && Effect is not null)
-				{
 					AddHistory($"{Effect}", 1);
-				}
 				break;
 		}
 	}
@@ -128,6 +127,7 @@ internal partial class MarkdownState
 			case "message_ResetActor":
 				Actor = null;
 				Face = null;
+				Faded = false;
 				break;
 			case "screen_FadeIn":
 			case "screen_FadeInAll":
@@ -138,9 +138,12 @@ internal partial class MarkdownState
 			case "screen2_FadeOut":
 			case "screen2_FadeOutAll":
 			case "screen_WhiteOut":
-				AddHistory("* * *", 2);
+				if (!Faded)
+					AddHistory("* * *", 2);
+				Faded = true;
 				break;
 			default:
+				Faded = false;
 				break;
 		}
 	}

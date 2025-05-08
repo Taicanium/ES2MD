@@ -144,7 +144,7 @@ Tokens: {TokenSum:N0}";
 
 		if (!Directory.Exists($"Markdown/"))
 			Directory.CreateDirectory($"Markdown/");
-		mdState.Export($"Markdown/{tree.Name}.txt");
+		mdState.Export($"Markdown/{tree.Name}.md");
 	}
 
 	[GeneratedRegex(@"//.*")]
