@@ -194,8 +194,23 @@ internal partial class MarkdownState
 				var cInput = (ESConditional)input;
 				if (cInput.Condition == ESConditional.ConditionalType.Else)
 					AddHistory("*Else:*", 2);
-				else if (cInput.Comparison.Contains("BIT_FLAG"))
-					AddHistory("*If certain conditions are met:*", 2);
+				else if (cInput.Comparison.Contains("SCENARIO_MAIN_BIT_FLAG"))
+				{
+					if (cInput.Comparison.Contains("[33]"))
+						AddHistory("*If any of the seven treasures has been collected:*", 2);
+					else if (cInput.Comparison.Contains("[48]"))
+						AddHistory("*If the player has received Sneasel's gift:*", 2);
+					else if (cInput.Comparison.Contains("[8]"))
+						AddHistory("*If the game was last saved by sleeping:*", 2);
+					else
+						AddHistory("*If a certain flag is set:*", 2);
+				}
+				else if (cInput.Comparison.Contains("PERFORMANCE_PROGRESS_LIST[7]"))
+					AddHistory("*If the party leader cannot be switched at this time:*", 2);
+				else if (cInput.Comparison.Contains("not debug"))
+					AddHistory("*If not debugging:*", 2);
+				else if (cInput.Comparison.Contains("debug"))
+					AddHistory("*If debugging:*", 2);
 				else if (cInput.Comparison.Contains("SCENARIO_") &&
 					cInput.Comparison.Contains(">=") || cInput.Comparison.Contains("=="))
 					AddHistory("*If the player has progressed far enough:*", 2);
