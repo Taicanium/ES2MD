@@ -31,6 +31,7 @@ internal partial class MarkdownState
 		History.Add($"{bullets}{input}");
 		for (int i = 0; i < blankLines; i++)
 			History.Add(string.Empty);
+		Faded = input.Equals("* * *");
 	}
 
 	private static string AssertLabel(string input) => input.Replace("@", string.Empty).Replace("label", string.Empty).Replace("_", string.Empty).Replace(";", string.Empty);
@@ -127,23 +128,21 @@ internal partial class MarkdownState
 			case "message_ResetActor":
 				Actor = null;
 				Face = null;
-				Faded = false;
 				break;
 			case "screen_FadeIn":
 			case "screen_FadeInAll":
-			case "screen2_FadeIn":
-			case "screen2_FadeInAll":
 			case "screen_FadeOut":
 			case "screen_FadeOutAll":
+			case "screen_WhiteOut":
+			case "screen2_FadeIn":
+			case "screen2_FadeInAll":
 			case "screen2_FadeOut":
 			case "screen2_FadeOutAll":
-			case "screen_WhiteOut":
+			case "screen2_WhiteOut":
 				if (!Faded)
 					AddHistory("* * *", 2);
-				Faded = true;
 				break;
 			default:
-				Faded = false;
 				break;
 		}
 	}
