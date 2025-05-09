@@ -21,6 +21,7 @@ internal partial class ESSwitch : ESToken
 	{
 		bool colonBrace = false;
 		MenuDepth = menuDepth;
+		bool newMemberMenu = GetTargetVariable().Contains("MENU_ACCEPT_TEAM_MEMBER", StringComparison.InvariantCultureIgnoreCase);
 		int orderCount = 0;
 		bool quote = false;
 		var thisData = string.Empty;
@@ -68,6 +69,7 @@ internal partial class ESSwitch : ESToken
 				if (orderCount == 1)
 				{
 					Cases.Add(new(DoubleCaseRegex().Replace(thisData.Replace(": default:", ":"), ":"),
+						newMemberMenu,
 						Indent + 1, MenuDepth));
 					thisData = string.Empty;
 				}

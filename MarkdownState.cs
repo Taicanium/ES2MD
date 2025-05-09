@@ -93,13 +93,14 @@ internal partial class MarkdownState
 
 	private void ProcessDialogue(string input)
 	{
-		if (Identifier?.StartsWith("back_SetBanner") is true || Identifier?.StartsWith("message_Mail") is true)
+		if (Identifier?.StartsWith("back_SetBanner") is true || Identifier?.StartsWith("message_Explanation") is true || Identifier?.StartsWith("message_Mail") is true)
 		{
 			if (blockQuote)
 				History[^1] += ">";
 			History.Add($">{ProcessTags(input.Trim())}");
 			History.Add(string.Empty);
 			blockQuote = true;
+			Faded = false;
 			return;
 		}
 

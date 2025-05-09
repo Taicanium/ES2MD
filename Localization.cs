@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Xml.Linq;
 
 namespace ES2MD;
 
@@ -299,12 +300,14 @@ static class Localization
 
 	public static Dictionary<string, string> tags = new([
 		new(@"c_kind:ATTENDANT1", "`Partner Species`"),
+		new(@"c_name:NPC_NEW_FRIEND", "`Friend Name`"),
 		new(@"c_kind:PLAYER", "`Hero Species`"),
 		new(@"CS:*\w*", "**"),
 		new(@"CR:*\w*", "**"),
 		new(@"FT:1", "(Unown: "),
 		new(@"FT:0", ")"),
 		new(@"hero", "`Hero Name`"),
+		new(@"player", "`Hero Name`"),
 		new(@"K", string.Empty),
 		new(@"M:H8", "\U0001FA77"),
 		new(@"M:I0", "`TM`"),
