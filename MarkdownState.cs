@@ -93,7 +93,7 @@ internal partial class MarkdownState
 
 	private void ProcessDialogue(string input)
 	{
-		if (Identifier?.Equals("message_Mail") is true)
+		if (Identifier?.StartsWith("back_SetBanner") is true || Identifier?.StartsWith("message_Mail") is true)
 		{
 			if (blockQuote)
 				History[^1] += ">";
