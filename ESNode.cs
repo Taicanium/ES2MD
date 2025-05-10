@@ -84,6 +84,23 @@ internal partial class ESNode(int Indent = 0)
 			return;
 		}
 
+		if (data.StartsWith('@'))
+		{
+			Tokens.Add(new ESToken(data, ESToken.ESTokenType.Label, Indent));
+			LabelSum++;
+			TokenSum++;
+			argument = false;
+			return;
+		}
+
+		if (LoopRegex().IsMatch(data))
+		{
+			Tokens.Add(new ESLoop(data, Indent));
+			TokenSum++;
+			LoopSum++;
+			return;
+		}
+
 		if (TemplateRegex().IsMatch(data))
 		{
 			var groups = TemplateRegex().Match(data).Groups;
@@ -102,23 +119,6 @@ internal partial class ESNode(int Indent = 0)
 			TemplateSum++;
 			TokenSum++;
 			argument = true;
-			return;
-		}
-
-		if (data.StartsWith('@'))
-		{
-			Tokens.Add(new ESToken(data, ESToken.ESTokenType.Label, Indent));
-			LabelSum++;
-			TokenSum++;
-			argument = false;
-			return;
-		}
-
-		if (LoopRegex().IsMatch(data))
-		{
-			Tokens.Add(new ESLoop(data, Indent));
-			TokenSum++;
-			LoopSum++;
 			return;
 		}
 
