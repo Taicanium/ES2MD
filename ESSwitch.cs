@@ -10,25 +10,19 @@ internal partial class ESSwitch : ESToken
 {
 	public List<ESCase> Cases { get; } = [];
 
-	public int MenuDepth = 0;
-
 	public ESSwitch() : base()
 	{
 
 	}
 
-	public ESSwitch(string value, int Indent = 0, int menuDepth = 0) : base(value, ESTokenType.Switch, Indent)
+	public ESSwitch(string value, int Indent = 0) : base(value, ESTokenType.Switch, Indent)
 	{
 		bool colonBrace = false;
-		MenuDepth = menuDepth;
 		bool newMemberMenu = GetTargetVariable().Contains("MENU_ACCEPT_TEAM_MEMBER", StringComparison.InvariantCultureIgnoreCase);
 		int orderCount = 0;
 		bool quote = false;
 		var thisData = string.Empty;
 		bool waitingForCase = false;
-
-		if (GetTargetVariable().Contains("menu", StringComparison.InvariantCultureIgnoreCase))
-			MenuDepth++;
 
 		for (int i = 5; i < value.Length; i++)
 		{
@@ -68,9 +62,7 @@ internal partial class ESSwitch : ESToken
 
 				if (orderCount == 1)
 				{
-					Cases.Add(new(DoubleCaseRegex().Replace(thisData.Replace(": default:", ":"), ":"),
-						newMemberMenu,
-						Indent + 1, MenuDepth));
+					Cases.Add(new(DoubleCaseRegex().Replace(thisData.Replace(": default:", ":"), ":"), newMemberMenu, Indent + 1));
 					thisData = string.Empty;
 				}
 

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using static ES2MD.Localization;
 
@@ -25,6 +26,8 @@ internal partial class MarkdownState
 
 	private void AddHistory(string input, int blankLines)
 	{
+		if (blockQuote)
+			History.Add(string.Empty);
 		string bullets = string.Empty;
 		for (int i = 0; i < CaseDepth + LoopDepth + ConditionalDepth; i++)
 			bullets += "  * ";
@@ -32,6 +35,7 @@ internal partial class MarkdownState
 		for (int i = 0; i < blankLines; i++)
 			History.Add(string.Empty);
 		Faded = input.Equals("* * *");
+		blockQuote = false;
 	}
 
 	private static string AssertLabel(string input) => input.Replace("@", string.Empty).Replace("label", string.Empty).Replace("_", string.Empty).Replace(";", string.Empty);
@@ -126,6 +130,9 @@ internal partial class MarkdownState
 	{
 		switch (Identifier)
 		{
+			case "break_loop":
+				AddHistory("*Break from this loop.*", 2);
+				break;
 			case "message_ResetActor":
 				Actor = null;
 				Face = null;
@@ -148,22 +155,28 @@ internal partial class MarkdownState
 		}
 	}
 
-	private bool ProcessSwitchCase(ESCase Case)
+	private bool ProcessSwitchCase(ESCase Case, bool ItemCount = false, bool ItemGet = false)
 	{
-		if (Case.MenuDepth != CaseDepth)
+		if (ItemCount)
+			AddHistory($"*If the player has the needed item:*", 1);
+		else if (ItemGet)
+			AddHistory(Case.CaseVariable.Contains("default") ? $"*If the player chooses to take the item:*" : "*If the player chooses to leave:*", 1);
+		else if (!Case.PureDialogue)
 			AddHistory($"*If the player chooses \"{Case.CaseVariable}\":*", 1);
 
-		int depthTemp = CaseDepth;
-		CaseDepth = Case.MenuDepth;
+		if (Case.PureDialogue && !Case.CaseVariable.Equals("default"))
+			return false;
 
-		if (!Case.PureDialogue || Case.CaseVariable.Equals("default"))
-		{
-			for (int i = 0; i < Case.CaseValue.Tokens.Count; i++)
-				if (!Progress(Case.CaseValue.Tokens[i]))
-					return false;
-		}
+		if (!Case.PureDialogue)
+			CaseDepth++;
 
-		CaseDepth = depthTemp;
+		for (int i = 0; i < Case.CaseValue.Tokens.Count; i++)
+			if (!Progress(Case.CaseValue.Tokens[i]))
+				return false;
+
+		if (!Case.PureDialogue)
+			CaseDepth--;
+
 		return true;
 	}
 
@@ -245,9 +258,41 @@ internal partial class MarkdownState
 			case ESToken.ESTokenType.Switch:
 				var sInput = (ESSwitch)input;
 
-				if (sInput.GetTargetVariable().Contains("PROCESS_SPECIAL_GET_HERO_KIND"))
+				if (sInput.GetTargetVariable().Contains("TALK_KIND"))
 				{
-					if (!ProcessSwitchCase(sInput.Cases[0]))
+					if (sInput.Cases.Count == 0)
+						break;
+					var Case = sInput.Cases.Find(Case => Case.CaseVariable.Equals("default"));
+					if (Case is null || !ProcessSwitchCase(Case))
+						return false;
+					break;
+				}
+
+				if (sInput.GetTargetVariable().Contains("COUNT_ITEM"))
+				{
+					if (sInput.Cases.Count == 0)
+						break;
+					if (!ProcessSwitchCase(sInput.Cases[0], true))
+						return false;
+					break;
+				}
+
+				if (sInput.GetTargetVariable().Contains("MENU_GIVE_ITEM"))
+				{
+					if (sInput.Cases.Count == 0)
+						break;
+					foreach (ESCase Case in sInput.Cases)
+					if (!ProcessSwitchCase(Case, false, true))
+						return false;
+					break;
+				}
+
+				if (sInput.GetTargetVariable().Contains("GET_HERO_KIND"))
+				{
+					if (sInput.Cases.Count == 0)
+						break;
+					var Case = sInput.Cases.Find(Case => Case.CaseVariable.Equals("default"));
+					if (Case is null || !ProcessSwitchCase(Case))
 						return false;
 					break;
 				}

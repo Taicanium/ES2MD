@@ -11,8 +11,6 @@ internal partial class ESCase : ESToken
 	public ESNode CaseValue { get; set; }
 	public string CaseVariable { get; set; } = string.Empty;
 
-	public int MenuDepth = 0;
-
 	public bool PureDialogue = false;
 
 	public ESCase() : base()
@@ -21,7 +19,7 @@ internal partial class ESCase : ESToken
 		CaseVariable = "default";
 	}
 
-	public ESCase(string value, bool newMemberCase, int Indent = 0, int menuDepth = 0) : base(value, ESTokenType.Case, Indent)
+	public ESCase(string value, bool newMemberCase, int Indent = 0) : base(value, ESTokenType.Case, Indent)
 	{
 		CaseValue = new(Indent + 1);
 		var valGroups = ValueRegex().Match(value).Groups;
@@ -42,12 +40,10 @@ internal partial class ESCase : ESToken
 		if (string.IsNullOrWhiteSpace(CaseVariable))
 			CaseVariable = "default";
 
-		MenuDepth = menuDepth;
-
 		if (newMemberCase)
 			CaseVariable = CaseVariable.Equals("1") ? "Accept" : "Refuse";
 
-		CaseValue.Parse(valGroups[1].Value.Trim(), MenuDepth);
+		CaseValue.Parse(valGroups[1].Value.Trim());
 
 		if (CaseValue.Tokens.Count == 1 && CaseValue.Tokens[0].TokenType == ESTokenType.Dialogue)
 			PureDialogue = true;

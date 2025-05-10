@@ -16,7 +16,7 @@ internal partial class ESNode(int Indent = 0)
 	public int Indent { get => _indent; private set => _indent = value; }
 	public List<ESToken> Tokens { get => _tokens; private set => _tokens = value; }
 
-	public bool Parse(string tokenData, int menuDepth = 0)
+	public bool Parse(string tokenData)
 	{
 		int braceCount = 0;
 		int bracketCount = 0;
@@ -35,7 +35,7 @@ internal partial class ESNode(int Indent = 0)
 				braceCount--;
 				if (braceCount == 0 && bracketCount == 0)
 				{
-					MakeToken(thisData.Trim(), menuDepth);
+					MakeToken(thisData.Trim());
 					thisData = string.Empty;
 					continue;
 				}
@@ -45,30 +45,30 @@ internal partial class ESNode(int Indent = 0)
 				bracketCount--;
 				if (braceCount == 0 && bracketCount == 0)
 				{
-					MakeToken(thisData.Trim(), menuDepth);
+					MakeToken(thisData.Trim());
 					thisData = string.Empty;
 					continue;
 				}
 			}
 			if (val[i].Equals(';') && braceCount == 0 && bracketCount == 0)
 			{
-				MakeToken(thisData.Trim(), menuDepth);
+				MakeToken(thisData.Trim());
 				thisData = string.Empty;
 				continue;
 			}
 		}
 
 		if (!string.IsNullOrWhiteSpace(thisData.Trim()))
-			MakeToken(thisData.Trim(), menuDepth);
+			MakeToken(thisData.Trim());
 
 		return true;
 	}
 
-	private void MakeToken(string data, int menuDepth)
+	private void MakeToken(string data)
 	{
 		if (SwitchRegex().IsMatch(data))
 		{
-			Tokens.Add(new ESSwitch(data, Indent, menuDepth));
+			Tokens.Add(new ESSwitch(data, Indent));
 			SwitchSum++;
 			TokenSum++;
 			argument = false;
