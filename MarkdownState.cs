@@ -12,7 +12,7 @@ internal partial class MarkdownState
 {
 	private string? Actor;
 	private int ArgumentIndex = 0;
-	private bool blockQuote = false;
+	private bool BlockQuote = false;
 	private int CaseDepth = 0;
 	private int ConditionalDepth = 0;
 	private string? Effect;
@@ -26,7 +26,7 @@ internal partial class MarkdownState
 
 	private void AddHistory(string input, int blankLines)
 	{
-		if (blockQuote)
+		if (BlockQuote)
 			History.Add(string.Empty);
 		string bullets = string.Empty;
 		for (int i = 0; i < CaseDepth + LoopDepth + ConditionalDepth; i++)
@@ -35,7 +35,7 @@ internal partial class MarkdownState
 		for (int i = 0; i < blankLines; i++)
 			History.Add(string.Empty);
 		Faded = input.Equals("* * *");
-		blockQuote = false;
+		BlockQuote = false;
 	}
 
 	private static string AssertLabel(string input) => input.Replace("@", string.Empty).Replace("label", string.Empty).Replace("_", string.Empty).Replace(";", string.Empty);
@@ -99,11 +99,11 @@ internal partial class MarkdownState
 	{
 		if (Identifier?.StartsWith("back_SetBanner") is true || Identifier?.StartsWith("message_Explanation") is true || Identifier?.StartsWith("message_Mail") is true)
 		{
-			if (blockQuote)
-				History[^1] += ">";
+			if (BlockQuote)
+				History[^1] = ">";
 			History.Add($">{ProcessTags(input.Trim())}");
 			History.Add(string.Empty);
-			blockQuote = true;
+			BlockQuote = true;
 			Faded = false;
 			return;
 		}
@@ -121,7 +121,7 @@ internal partial class MarkdownState
 		if (!afterTags.Equals(string.Empty))
 			AddHistory($"`{Actor ?? "💬"}`: \"{afterTags}\"", 2);
 
-		blockQuote = false;
+		BlockQuote = false;
 		Effect = null;
 		EffectActor = null;
 	}
@@ -258,7 +258,7 @@ internal partial class MarkdownState
 			case ESToken.ESTokenType.Switch:
 				var sInput = (ESSwitch)input;
 
-				if (sInput.GetTargetVariable().Contains("TALK_KIND"))
+				if (sInput.GetTargetVariable().Contains("TALK_KIND") || sInput.GetTargetVariable().Contains("GET_HERO_KIND"))
 				{
 					if (sInput.Cases.Count == 0)
 						break;
@@ -279,21 +279,9 @@ internal partial class MarkdownState
 
 				if (sInput.GetTargetVariable().Contains("MENU_GIVE_ITEM"))
 				{
-					if (sInput.Cases.Count == 0)
-						break;
 					foreach (ESCase Case in sInput.Cases)
-					if (!ProcessSwitchCase(Case, false, true))
-						return false;
-					break;
-				}
-
-				if (sInput.GetTargetVariable().Contains("GET_HERO_KIND"))
-				{
-					if (sInput.Cases.Count == 0)
-						break;
-					var Case = sInput.Cases.Find(Case => Case.CaseVariable.Equals("default"));
-					if (Case is null || !ProcessSwitchCase(Case))
-						return false;
+						if (!ProcessSwitchCase(Case, false, true))
+							return false;
 					break;
 				}
 
@@ -325,14 +313,12 @@ internal partial class MarkdownState
 		bool state = true;
 		foreach (ESToken token in input.Tokens)
 			state = state && Progress(token);
-
 		return state;
 	}
 
 	public bool Reset()
 	{
 		History.Clear();
-
 		return true;
 	}
 
