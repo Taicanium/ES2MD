@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using System.Text;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
 using static ES2MD.Localization;
 
@@ -42,8 +42,16 @@ internal partial class MarkdownState
 
 	public bool Export(string filename)
 	{
-		File.WriteAllLines(filename, History);
-		Reset();
+		try
+		{
+			File.WriteAllLines(filename, History);
+			Reset();
+		}
+		catch
+		{
+			return false;
+		}
+
 		return true;
 	}
 
@@ -59,6 +67,8 @@ internal partial class MarkdownState
 				Actor = null;
 				if (actors.TryGetValue(argument, out Actor))
 					Faces.TryGetValue(Actor, out Face);
+				if (Actor is null)
+					break;
 				break;
 			case "message_SetFace":
 			case "message_SetFaceOnly":
@@ -66,6 +76,8 @@ internal partial class MarkdownState
 				{
 					if (!actors.TryGetValue(argument, out Actor))
 						Actor = null;
+					if (Actor is null)
+						break;
 					break;
 				}
 				
@@ -155,9 +167,11 @@ internal partial class MarkdownState
 		}
 	}
 
-	private bool ProcessSwitchCase(ESCase Case, bool ItemCount = false, bool ItemGet = false)
+	private bool ProcessSwitchCase(ESCase Case, bool ItemCount = false, bool ItemGet = false, bool Random = false)
 	{
-		if (ItemCount)
+		if (Random)
+			AddHistory($"*If a random number is {Case.CaseVariable}:*", 1);
+		else if (ItemCount)
 			AddHistory($"*If the player has the needed item:*", 1);
 		else if (ItemGet)
 			AddHistory(Case.CaseVariable.Contains("default") ? $"*If the player chooses to take the item:*" : "*If the player chooses to leave:*", 1);
@@ -170,7 +184,7 @@ internal partial class MarkdownState
 		if (!Case.PureDialogue)
 			CaseDepth++;
 
-		for (int i = 0; i < Case.CaseValue.Tokens.Count; i++)
+		for (int i = 0; i < Case.CaseValue?.Tokens.Count; i++)
 			if (!Progress(Case.CaseValue.Tokens[i]))
 				return false;
 
@@ -251,12 +265,23 @@ internal partial class MarkdownState
 				var lInput = (ESLoop)input;
 				AddHistory("*Loop forever:*", 2);
 				LoopDepth++;
-				if (!Progress(lInput.content))
+				if (!Progress(lInput.Content))
 					return false;
 				LoopDepth--;
 				break;
 			case ESToken.ESTokenType.Switch:
 				var sInput = (ESSwitch)input;
+				if (sInput.MarkedDown)
+					break;
+
+				if (sInput.GetTargetVariable().Contains("random"))
+				{
+					if (sInput.Cases.Count == 0)
+						break;
+					foreach (ESCase Case in sInput.Cases)
+						if (!ProcessSwitchCase(Case, false, false, true))
+							return false;
+				}
 
 				if (sInput.GetTargetVariable().Contains("TALK_KIND") || sInput.GetTargetVariable().Contains("GET_HERO_KIND"))
 				{
@@ -264,7 +289,11 @@ internal partial class MarkdownState
 						break;
 					var Case = sInput.Cases.Find(Case => Case.CaseVariable.Equals("default"));
 					if (Case is null || !ProcessSwitchCase(Case))
-						return false;
+					{
+						sInput.Cases[0].CaseVariable = "default";
+						if (!ProcessSwitchCase(sInput.Cases[0]))
+							return false;
+					}
 					break;
 				}
 
@@ -288,6 +317,8 @@ internal partial class MarkdownState
 				foreach (ESCase Case in sInput.Cases)
 					if (!ProcessSwitchCase(Case))
 						return false;
+
+				sInput.MarkedDown = true;
 				break;
 			case ESToken.ESTokenType.Template:
 				if (Identifier?.Equals("SetEffect") is true)
@@ -308,18 +339,32 @@ internal partial class MarkdownState
 		return true;
 	}
 
-	public bool Progress(ESNode input)
+	public bool Progress(ESNode? input)
 	{
-		bool state = true;
+		if (input is null)
+			return true;
+
 		foreach (ESToken token in input.Tokens)
-			state = state && Progress(token);
-		return state;
+			if (!Progress(token))
+				return false;
+		return true;
 	}
 
-	public bool Reset()
+	public void Reset()
 	{
+		Actor = null;
+		ArgumentIndex = 0;
+		BlockQuote = false;
+		CaseDepth = 0;
+		ConditionalDepth = 0;
+		Effect = null;
+		EffectActor = null;
+		Face = null;
+		Faded = false;
+		Faces.Clear();
+		Identifier = null;
 		History.Clear();
-		return true;
+		LoopDepth = 0;
 	}
 
 	[GeneratedRegex(@"\[[\w:]+\]")]

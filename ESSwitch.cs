@@ -10,86 +10,86 @@ internal partial class ESSwitch : ESToken
 {
 	public List<ESCase> Cases { get; } = [];
 
-	public ESSwitch() : base()
-	{
+	private readonly string[] BreakWords = ["break;", "continue;", "end;"];
 
-	}
+	public bool MarkedDown { get; set; } = false;
 
 	public ESSwitch(string value, int Indent = 0) : base(value, ESTokenType.Switch, Indent)
 	{
-		bool colonBrace = false;
+		List<bool> braceLevels = [];
+		bool init = false;
 		bool newMemberMenu = GetTargetVariable().Contains("MENU_ACCEPT_TEAM_MEMBER", StringComparison.InvariantCultureIgnoreCase);
 		int orderCount = 0;
 		bool quote = false;
-		var thisData = string.Empty;
-		bool waitingForCase = false;
+		string thisData = string.Empty;
+		bool waitingOnCase = true;
 
-		for (int i = 5; i < value.Length; i++)
+		for (int i = 2; i < value.Length; i++)
 		{
 			thisData += value[i];
+			if (!init && !value[i].Equals('{'))
+				continue;
+
+			if (!init)
+			{
+				orderCount++;
+				thisData = string.Empty;
+			}
+
+			init = true;
 
 			if (value[i].Equals('"'))
-			{
-				colonBrace = false;
 				quote = !quote;
+
+			if (quote)
 				continue;
-			}
 
-			if (thisData.EndsWith("case"))
-				waitingForCase = true;
+			if (DoubleCaseEndRegex().IsMatch(thisData))
+				quote = quote;
 
-			if ((value[i].Equals('{') && !colonBrace && !waitingForCase) || (!quote && value[i].Equals(':') && (i > value.Length - 7 || !value[(i + 2)..].StartsWith("case")) && (i > value.Length - 10 || !value[(i + 2)..].StartsWith("default"))))
+			if (value[i].Equals(':') && !thisData.EndsWith(": default:") && !DoubleCaseEndRegex().IsMatch(thisData))
 			{
-				colonBrace = true;
 				orderCount++;
+				waitingOnCase = false;
 
-				if (!quote && value[i].Equals(':'))
-					waitingForCase = false;
+				while (braceLevels.Count < orderCount + 1)
+					braceLevels.Add(false);
 
-				if (orderCount == 1)
-					thisData = string.Empty;
-
-				continue;
+				braceLevels[orderCount] = false;
 			}
 
-			if (!waitingForCase && (value[i].Equals('}') || thisData.EndsWith("break;") || thisData.EndsWith("end;") || JumpRegex().IsMatch(thisData)))
+			if (waitingOnCase)
+				continue;
+
+			if (value[i].Equals('{') && !value[i - 2].Equals(':'))
 			{
-				colonBrace = false;
+				orderCount++;
+				while (braceLevels.Count < orderCount + 1)
+					braceLevels.Add(false);
+
+				braceLevels[orderCount] = true;
+			}
+
+			if (value[i].Equals('}') || (!braceLevels[orderCount] && (JumpRegex().IsMatch(thisData) || BreakWords.Any(word => thisData.EndsWith(word)))))
+			{
 				orderCount--;
-
-				if (orderCount == 0)
-					return;
-
 				if (orderCount == 1)
 				{
-					Cases.Add(new(DoubleCaseRegex().Replace(thisData.Replace(": default:", ":"), ":"), newMemberMenu, Indent + 1));
+					Cases.Add(new(DoubleCaseRegex().Replace(thisData, string.Empty).Replace(": default:", ":").Trim(), newMemberMenu, Indent + 1));
 					thisData = string.Empty;
+					waitingOnCase = true;
 				}
-
-				continue;
 			}
-
-			if (char.IsLetterOrDigit(value[i]))
-				colonBrace = false;
 		}
 	}
 
-	public string GetTargetVariable()
-	{
-		return VariableRegex().Match(TokenValue).Groups[1].Value.Trim();
-	}
+	public string GetTargetVariable() => VariableRegex().Match(TokenValue).Groups[1].Value.Trim();
 
-	public string GetCases()
-	{
-		return $"{string.Join('\n', Cases)}";
-	}
+	private string GetCases() => $"{string.Join('\n', Cases)}";
 
-	public override string ToString()
-	{
-		return $"{new string('\t', Indent)}Switch:\n{new string('\t', Indent + 1)}Variable: {GetTargetVariable()}\n{GetCases()}";
-	}
+	public override string ToString() => $"{new string('\t', Indent)}Switch:\n{new string('\t', Indent + 1)}Variable: {GetTargetVariable()}\n{GetCases()}";
 
-	[GeneratedRegex(@"jump @*\w+;$")]
+	[GeneratedRegex(@"jump @*[\w_]+;$")]
 	private static partial Regex JumpRegex();
 
 	[GeneratedRegex(@"\((\s*.+?\s*)\)\s*?{")]
@@ -97,4 +97,7 @@ internal partial class ESSwitch : ESToken
 
 	[GeneratedRegex(@": case .*?:")]
 	private static partial Regex DoubleCaseRegex();
+
+	[GeneratedRegex(@": (case){1} .*?:$")]
+	private static partial Regex DoubleCaseEndRegex();
 }

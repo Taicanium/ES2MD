@@ -9,7 +9,7 @@ namespace ES2MD;
 /// </summary>
 internal partial class ESNode(int Indent = 0)
 {
-	private bool argument = false;
+	private bool _argument = false;
 	private int _indent = Indent;
 	private List<ESToken> _tokens = [];
 
@@ -71,7 +71,7 @@ internal partial class ESNode(int Indent = 0)
 			Tokens.Add(new ESSwitch(data, Indent));
 			SwitchSum++;
 			TokenSum++;
-			argument = false;
+			_argument = false;
 			return;
 		}
 
@@ -80,7 +80,7 @@ internal partial class ESNode(int Indent = 0)
 			Tokens.Add(new ESConditional(data, Indent));
 			ConditionalSum++;
 			TokenSum++;
-			argument = false;
+			_argument = false;
 			return;
 		}
 
@@ -89,7 +89,7 @@ internal partial class ESNode(int Indent = 0)
 			Tokens.Add(new ESToken(data, ESToken.ESTokenType.Label, Indent));
 			LabelSum++;
 			TokenSum++;
-			argument = false;
+			_argument = false;
 			return;
 		}
 
@@ -118,7 +118,7 @@ internal partial class ESNode(int Indent = 0)
 
 			TemplateSum++;
 			TokenSum++;
-			argument = true;
+			_argument = true;
 			return;
 		}
 
@@ -127,7 +127,7 @@ internal partial class ESNode(int Indent = 0)
 			Tokens.Add(new ESArrayAccessor(data, Indent));
 			ArrayAccessorSum++;
 			TokenSum++;
-			argument = false;
+			_argument = false;
 			return;
 		}
 
@@ -145,7 +145,7 @@ internal partial class ESNode(int Indent = 0)
 				continue;
 			}
 
-			if (argument)
+			if (_argument)
 			{
 				Tokens.Add(new ESToken(arg.Value, ESToken.ESTokenType.Argument, Indent + 1));
 				TokenSum++;
@@ -156,10 +156,10 @@ internal partial class ESNode(int Indent = 0)
 			Tokens.Add(new ESToken(arg.Value, ESToken.ESTokenType.Identifier, Indent));
 			TokenSum++;
 			IdentifierSum++;
-			argument = true;
+			_argument = true;
 		}
 
-		argument = false;
+		_argument = false;
 	}
 
 	public override string ToString() => $"{string.Join("\n", Tokens.Select(token => token.ToString()))}";

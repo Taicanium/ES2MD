@@ -16,17 +16,13 @@ internal partial class ESConditional : ESToken
 		Else,
 	}
 
-	public ESNode ConditionalValue { get; set; } = new();
+	public ESNode? ConditionalValue { get; set; }
 
 	private string _comparison = string.Empty;
 	private ConditionalType? _condition;
 
 	public string Comparison { get => _comparison; private set => _comparison = value; }
 	public ConditionalType? Condition { get => _condition; private set => _condition = value; }
-
-	public ESConditional() : base()
-	{
-	}
 
 	public ESConditional(string value, int indent = 0) : base(value, ESTokenType.Conditional, indent)
 	{

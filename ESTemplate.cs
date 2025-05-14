@@ -6,26 +6,8 @@ namespace ES2MD;
 /// A template is stored in an EXPS file within angle brackets (<>) - they indicate a specific target that a function is applied to.
 /// For instance, Turn2Direction is a function that causes an actor to turn a certain direction. Which specific actor is turning is listed within a template.
 /// </summary>
-internal partial class ESTemplate : ESToken
+internal partial class ESTemplate(string value, int Indent = 0) : ESToken(value, ESTokenType.Template, Indent)
 {
-	public ESTemplate() : base()
-	{
-	}
-
-	public ESTemplate(string value) : base(value, ESTokenType.Template)
-	{
-	}
-
-	public ESTemplate(string value, int Indent) : base(value, ESTokenType.Template, Indent)
-	{
-	}
-
-	public string GetTargetType()
-	{
-		var TokenList = TemplateRegex().Matches(TokenValue);
-		return TokenList.ElementAt(0).Groups[1].Value;
-	}
-
 	public string[] GetTargetIdentifiers(bool display = true)
 	{
 		var TokenList = TemplateRegex().Matches(TokenValue).ToList();
@@ -35,6 +17,8 @@ internal partial class ESTemplate : ESToken
 
 		return [.. TokenList.GetRange(1, TokenList.Count - 1).Select(match => match.Groups[1].Value)];
 	}
+
+	private string GetTargetType() => TemplateRegex().Matches(TokenValue).ElementAt(0).Groups[1].Value;
 
 	public override string ToString() => $@"{new string('\t', Indent)}Template
 {new string('\t', Indent + 1)}Type: {GetTargetType()}{string.Concat(GetTargetIdentifiers())}";

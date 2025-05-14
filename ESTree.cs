@@ -7,19 +7,13 @@ namespace ES2MD;
 /// An object of type ESTree corresponds to an entire .exps file and all of the animations inside it.
 /// This is the root object created when an EXPS file is opened.
 /// </summary>
-internal partial class ESTree
+internal partial class ESTree()
 {
-	private List<ESAnimation> _animations;
-	private string _name;
+	private readonly List<ESAnimation> _animations = [];
+	private string _name = string.Empty;
 
-	public List<ESAnimation> Animations { get => _animations; private set => _animations = value; }
+	public List<ESAnimation> Animations { get => _animations; }
 	public string Name { get => _name; private set => _name = value; }
-
-	public ESTree()
-	{
-		_animations = [];
-		_name = string.Empty;
-	}
 
 	public bool Construct(string fileData)
 	{
