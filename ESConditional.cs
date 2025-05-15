@@ -33,7 +33,7 @@ internal partial class ESConditional : ESToken
 			"elseif" => ConditionalType.ElseIf,
 			"else" => ConditionalType.Else,
 			_ => ConditionalType.None,
-		} : null;
+		} : ConditionalType.None;
 
 		if (Condition.Equals(ConditionalType.None))
 			return;

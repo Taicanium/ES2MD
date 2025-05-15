@@ -72,21 +72,20 @@ internal partial class MarkdownState
 				break;
 			case "message_SetFace":
 			case "message_SetFaceOnly":
-				if (ArgumentIndex == 0)
+				switch (ArgumentIndex)
 				{
-					if (!actors.TryGetValue(argument, out Actor))
-						Actor = null;
-					if (Actor is null)
+					case 0:
+						if (!actors.TryGetValue(argument, out Actor))
+							Actor = null;
+						if (Actor is null)
+							break;
 						break;
-					break;
-				}
-				
-				if (ArgumentIndex == 1)
-				{
-					Face = null;
-					if (faces.TryGetValue(argument, out Face) && Actor is not null)
-						Faces[Actor] = Face;
-					break;
+
+					case 1:
+						Face = null;
+						if (faces.TryGetValue(argument, out Face) && Actor is not null)
+							Faces[Actor] = Face;
+						break;
 				}
 
 				break;
@@ -219,6 +218,8 @@ internal partial class MarkdownState
 				break;
 			case ESToken.ESTokenType.Conditional:
 				var cInput = (ESConditional)input;
+				var cMet = false;
+
 				if (cInput.Condition == ESConditional.ConditionalType.Else)
 					AddHistory("*Else:*", 2);
 				else if (cInput.Comparison.Contains("SCENARIO_MAIN_BIT_FLAG"))
@@ -238,9 +239,21 @@ internal partial class MarkdownState
 					AddHistory("*If not debugging:*", 2);
 				else if (cInput.Comparison.Contains("debug"))
 					AddHistory("*If debugging:*", 2);
-				else if (cInput.Comparison.Contains("SCENARIO_") &&
-					cInput.Comparison.Contains(">=") || cInput.Comparison.Contains("=="))
-					AddHistory("*If the player has progressed far enough:*", 2);
+				else if (cInput.Comparison.Contains("SCENARIO_") && (cInput.Comparison.Contains(">=") || cInput.Comparison.Contains("==")))
+				{
+					foreach (var kv in scenarioFlags)
+					{
+						if (!cMet && cInput.Comparison.Contains(kv.Key))
+						{
+							AddHistory($"*If {kv.Value}:*", 2);
+							cMet = true;
+							break;
+						}
+					}
+
+					if (!cMet)
+						AddHistory("*If the player has progressed far enough:*", 2);
+				}
 				else if (cInput.Comparison.Contains("SCENARIO_") && cInput.Comparison.Contains('<'))
 					AddHistory("*If the player has not progressed far enough:*", 2);
 				else

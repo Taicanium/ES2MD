@@ -298,6 +298,44 @@ static class Localization
 		new("FACE_WORRIED", "Worried")
 	]);
 
+	public static Dictionary<string, string> scenarioFlags = new([
+		new(@"[5, 2]","the Hero has entered Diglett's sentry point"),
+		new(@"[7, 5]","the Hero has done sentry duty for the second time"),
+		new(@"[10, 2]","the Team has entered Foggy Forest"),
+		new(@"[11, 1]","the Team has arrived at Steam Cave"),
+		new(@"[11, 2]","Team Skull has attacked Wigglytuff"),
+		new(@"[11, 3]","the Team has arrived at Upper Steam Cave"),
+		new(@"[13, 2]","the Team has arrived at Amp Plains"),
+		new(@"[15, 1]","the Team has jumped into the desert quicksand"),
+		new(@"[19, 3]","the Team has entered Sealed Ruin Pit"),
+		new(@"[22, 2]","Chatot has given the Guild their orders"),
+		new(@"[22, 3]","the Guild has been briefed on the Hidden Land"),
+		new(@"[26, 3]","the Team has reached Temporal Tower"),
+		new(@"[29, 8]","the Team has learned there's good news at the café"),
+		new(@"[29, 10]","the Team has reached Shaymin Village"),
+		new(@"[29, 12]","the Team has reached Sky Peak's 1st Station Clearing"),
+		new(@"[29, 14]","the Team has reached Sky Peak's 2nd Station Clearing"),
+		new(@"[29, 16]","the Team has reached Sky Peak's 3rd Station Clearing"),
+		new(@"[29, 18]","the Team has reached Sky Peak's 4th Station Clearing"),
+		new(@"[29, 20]","the Team has reached Sky Peak's 5th Station Clearing"),
+		new(@"[29, 22]","the Team has reached Sky Peak's 6th Station Clearing"),
+		new(@"[29, 24]","the Team has reached Sky Peak's 7th Station Clearing"),
+		new(@"[29, 26]","the Team has reached Sky Peak's 8th Station Clearing and asked Ampharos for help"),
+		new(@"[29, 28]","the Team has reached Sky Peak's 9th Station Clearing"),
+		new(@"[29, 30]","the Team has reached the summit of Sky Peak"),
+		new(@"[29, 31]","Shaymin has defeated the Grimer and Muk on Sky Peak"),
+		new(@"[29, 59]","the Team has encountered Regice"),
+		new(@"[29, 62]","the Team has encountered Regirock"),
+		new(@"[29, 64]","the Team has encountered Registeel"),
+		new(@"[29, 67]","the Team has unlocked Concealed Ruins"),
+		new(@"[29, 82]","the Team has been defeated in Spacial Rift"),
+		new(@"[29, 85]","the Team has encountered Palkia"),
+		new(@"[40, 2]","Bidoof has met the Kecleon Brothers"),
+		new(@"[41, 3]","Banette and Skorupi have been exposed as bullies"),
+		new(@"[42, 0]","Armaldo has scared off Banette and Skorupi"),
+		new(@"[42, 3]","Armaldo and Igglybuff have been defeated in Eastern Cave")
+	]);
+
 	public static Dictionary<string, string> tags = new([
 		new(@"c_kind:ATTENDANT1", "`Partner Species`"),
 		new(@"c_name:NPC_NEW_FRIEND", "`Friend Name`"),
