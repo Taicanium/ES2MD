@@ -32,20 +32,16 @@ internal partial class ESSwitch : ESToken
 
 			if (!init)
 			{
+				init = true;
 				orderCount++;
 				thisData = string.Empty;
 			}
-
-			init = true;
 
 			if (value[i].Equals('"'))
 				quote = !quote;
 
 			if (quote)
 				continue;
-
-			if (DoubleCaseEndRegex().IsMatch(thisData))
-				quote = quote;
 
 			if (value[i].Equals(':') && !thisData.EndsWith(": default:") && !DoubleCaseEndRegex().IsMatch(thisData))
 			{

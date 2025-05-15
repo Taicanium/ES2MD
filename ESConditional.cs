@@ -45,21 +45,22 @@ internal partial class ESConditional : ESToken
 			for (int i = 0; i < value.Length; i++)
 			{
 				var val = value[i];
+				thisData += val;
 				if (val.Equals('('))
 				{
 					braceCount++;
-					thisData = string.Empty;
+					if (braceCount == 1)
+						thisData = string.Empty;
 				}
 				if (val.Equals(')'))
 				{
 					braceCount--;
 					if (braceCount == 0)
 					{
-						_comparison = thisData.Trim();
+						_comparison = thisData[..^1].Trim();
 						break;
 					}
 				}
-				thisData += val;
 			}
 		}
 
