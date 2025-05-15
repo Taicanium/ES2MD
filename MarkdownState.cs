@@ -170,7 +170,7 @@ internal partial class MarkdownState
 	private bool ProcessSwitchCase(ESCase Case, bool ItemCount = false, bool ItemGet = false, bool Random = false)
 	{
 		if (Random)
-			AddHistory($"*If a random number is {Case.CaseVariable}:*", 1);
+			AddHistory(Case.CaseVariable.Contains("default") ? $"Else:" : $"*Pick a random number. If it is {Case.CaseVariable}:*", 1);
 		else if (ItemCount)
 			AddHistory($"*If the player has the needed item:*", 1);
 		else if (ItemGet)
@@ -281,6 +281,7 @@ internal partial class MarkdownState
 					foreach (ESCase Case in sInput.Cases)
 						if (!ProcessSwitchCase(Case, false, false, true))
 							return false;
+					break;
 				}
 
 				if (sInput.GetTargetVariable().Contains("TALK_KIND") || sInput.GetTargetVariable().Contains("GET_HERO_KIND"))
