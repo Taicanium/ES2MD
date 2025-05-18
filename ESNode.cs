@@ -19,7 +19,6 @@ internal partial class ESNode(int Indent = 0)
 	public bool Parse(string tokenData)
 	{
 		int braceCount = 0;
-		int bracketCount = 0;
 		string thisData = string.Empty;
 		var val = tokenData;
 
@@ -28,29 +27,17 @@ internal partial class ESNode(int Indent = 0)
 			thisData += val[i];
 			if (val[i].Equals('{'))
 				braceCount++;
-			if (val[i].Equals('<'))
-				bracketCount++;
 			if (val[i].Equals('}'))
 			{
 				braceCount--;
-				if (braceCount == 0 && bracketCount == 0)
+				if (braceCount == 0)
 				{
 					MakeToken(thisData.Trim());
 					thisData = string.Empty;
 					continue;
 				}
 			}
-			if (val[i].Equals('>'))
-			{
-				bracketCount--;
-				if (braceCount == 0 && bracketCount == 0)
-				{
-					MakeToken(thisData.Trim());
-					thisData = string.Empty;
-					continue;
-				}
-			}
-			if (val[i].Equals(';') && braceCount == 0 && bracketCount == 0)
+			if (val[i].Equals(';') && braceCount == 0)
 			{
 				MakeToken(thisData.Trim());
 				thisData = string.Empty;
@@ -114,11 +101,12 @@ internal partial class ESNode(int Indent = 0)
 			Tokens.Add(new ESTemplate(groups[3].Value, Indent + 1));
 
 			if (groups[4].Success && groups[4].Value.Trim().Length > 0)
-				Tokens.Add(new ESToken(groups[4].Value, ESToken.ESTokenType.Argument, Indent + 1));
+				foreach (Match argMatch in SubtemplateRegex().Matches(groups[4].Value.Trim()))
+					Tokens.Add(new ESToken(argMatch.Value.Trim(), ESToken.ESTokenType.Argument, Indent + 1));
 
 			TemplateSum++;
 			TokenSum++;
-			_argument = true;
+			_argument = false;
 			return;
 		}
 
@@ -170,7 +158,7 @@ internal partial class ESNode(int Indent = 0)
 	[GeneratedRegex(@"[$\w\.]+\s*?\[\s*?[\w\.]+\s*?\]\s+=\s*?[\w\.]+")]
 	private static partial Regex ArrayRegex();
 
-	[GeneratedRegex(@"^(?:elseif|if|else)\s*?\(*.*?\)*")]
+	[GeneratedRegex(@"^(?:elseif|if|else)(\s*?\(*.*?\)*)*?(?=elseif|if|else|$)")]
 	private static partial Regex ConditionalRegex();
 
 	[GeneratedRegex(@"(\w*?)=*?(""+.+""+)")]
@@ -179,9 +167,12 @@ internal partial class ESNode(int Indent = 0)
 	[GeneratedRegex(@"forever\s*{.+}")]
 	private static partial Regex LoopRegex();
 
+	[GeneratedRegex(@"((?:[\w\s'\.]+<[\w\s',\.]+?>)|(?:[\w\s'\.]+))")]
+	private static partial Regex SubtemplateRegex();
+
 	[GeneratedRegex(@"^[^{}<>\(\)]+witch.+?\{.*?\}")]
 	private static partial Regex SwitchRegex();
 
-	[GeneratedRegex(@"(\w*)\(*(\w*)(<.+>)\(*(\w*)")]
+	[GeneratedRegex(@"(\w*)\(*(\w*)\)*(<.+?>)\(*([\w\s<>',\.]*)\)*")]
 	private static partial Regex TemplateRegex();
 }

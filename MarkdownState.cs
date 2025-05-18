@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
 using static ES2MD.Localization;
 
@@ -12,7 +11,7 @@ internal partial class MarkdownState
 {
 	private string? Actor;
 	private int ArgumentIndex = 0;
-	private bool BlockQuote = false;
+	private bool BlockQuote;
 	private int CaseDepth = 0;
 	private int ConditionalDepth = 0;
 	private string? Effect;
@@ -23,6 +22,9 @@ internal partial class MarkdownState
 	private string? Identifier;
 	private readonly List<string> History = [];
 	private int LoopDepth = 0;
+	private bool OrphanedElse;
+	private string scn1 = string.Empty;
+	private string scn2 = string.Empty;
 
 	private void AddHistory(string input, int blankLines)
 	{
@@ -102,6 +104,18 @@ internal partial class MarkdownState
 
 				if (EffectActor is null && Effect is not null)
 					AddHistory($"{Effect}", 1);
+				break;
+			case "SCENARIO_MAIN":
+			case "SCENARIO_SIDE":
+				if (ArgumentIndex == 1)
+					scn1 = argument;
+
+				if (ArgumentIndex == 2)
+				{
+					scn2 = argument;
+					AddHistory($"*Scenario flag: [{scn1}, {scn2}]*", 2);
+				}
+
 				break;
 		}
 	}
@@ -206,6 +220,9 @@ internal partial class MarkdownState
 
 	private bool Progress(ESToken input)
 	{
+		if (input.TokenType != ESToken.ESTokenType.Conditional)
+			OrphanedElse = true;
+
 		switch (input.TokenType)
 		{
 			case ESToken.ESTokenType.ArrayAccess:
@@ -220,7 +237,7 @@ internal partial class MarkdownState
 				var cInput = (ESConditional)input;
 				var cMet = false;
 
-				if (cInput.Condition == ESConditional.ConditionalType.Else)
+				if (cInput.Condition == ESConditional.ConditionalType.Else && !OrphanedElse)
 					AddHistory("*Else:*", 2);
 				else if (cInput.Comparison.Contains("SCENARIO_MAIN_BIT_FLAG"))
 				{
@@ -258,10 +275,19 @@ internal partial class MarkdownState
 					AddHistory("*If the player has not progressed far enough:*", 2);
 				else
 					AddHistory("*If certain conditions are met:*", 2);
+
+				int CurrentLength = History.Count;
+
 				ConditionalDepth++;
 				if (!Progress(cInput.ConditionalValue))
 					return false;
 				ConditionalDepth--;
+
+				if (History.Count == CurrentLength)
+					History.RemoveRange(History.Count - 3, 3);
+				else
+					OrphanedElse = cInput.Condition == ESConditional.ConditionalType.Else;
+
 				break;
 			case ESToken.ESTokenType.Dialogue:
 				ProcessDialogue(input.TokenValue.Replace("\\", string.Empty));

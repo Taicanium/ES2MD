@@ -43,7 +43,7 @@ internal partial class ESSwitch : ESToken
 			if (quote)
 				continue;
 
-			if (value[i].Equals(':') && !thisData.EndsWith(": default:") && !DoubleCaseEndRegex().IsMatch(thisData))
+			if (value[i].Equals(':') && !thisData.EndsWith(": default:") && !value[i..(i + 6)].Equals(": case"))
 			{
 				orderCount++;
 				waitingOnCase = false;
@@ -71,7 +71,8 @@ internal partial class ESSwitch : ESToken
 				orderCount--;
 				if (orderCount == 1)
 				{
-					Cases.Add(new(DoubleCaseRegex().Replace(thisData, string.Empty).Replace(": default:", ":").Trim(), newMemberMenu, Indent + 1));
+					var dcReg = DoubleCaseRegex().Replace(thisData, ":");
+					Cases.Add(new(dcReg.Replace(": default:", ":").Trim(), newMemberMenu, Indent + 1));
 					thisData = string.Empty;
 					waitingOnCase = true;
 				}
@@ -91,9 +92,6 @@ internal partial class ESSwitch : ESToken
 	[GeneratedRegex(@"\((\s*.+?\s*)\)\s*?{")]
 	private static partial Regex VariableRegex();
 
-	[GeneratedRegex(@": case .*?:")]
+	[GeneratedRegex(@"(: case .*?)+:")]
 	private static partial Regex DoubleCaseRegex();
-
-	[GeneratedRegex(@": (case){1} .*?:$")]
-	private static partial Regex DoubleCaseEndRegex();
 }
