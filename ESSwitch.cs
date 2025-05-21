@@ -10,7 +10,7 @@ internal partial class ESSwitch : ESToken
 {
 	public List<ESCase> Cases { get; } = [];
 
-	private readonly string[] BreakWords = ["break;", "continue;", "end;"];
+	private readonly string[] BreakWords = ["break;", "continue;", "end;", "JumpCommon(CORO_END_TALK);"];
 
 	public bool MarkedDown { get; set; } = false;
 

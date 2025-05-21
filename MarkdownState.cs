@@ -180,14 +180,18 @@ internal partial class MarkdownState
 		}
 	}
 
-	private bool ProcessSwitchCase(ESCase Case, bool ItemCount = false, bool ItemGet = false, bool Random = false)
+	private bool ProcessSwitchCase(ESCase Case, string SwitchFlag = "")
 	{
-		if (Random)
+		if (SwitchFlag.Equals("Random"))
 			AddHistory(Case.CaseVariable.Contains("default") ? $"Else:" : $"*Pick a random number. If it is {Case.CaseVariable}:*", 1);
-		else if (ItemCount)
+		else if (SwitchFlag.Equals("ItemCount"))
 			AddHistory($"*If the player has the needed item:*", 1);
-		else if (ItemGet)
+		else if (SwitchFlag.Equals("ItemGet"))
 			AddHistory(Case.CaseVariable.Contains("default") ? $"*If the player chooses to take the item:*" : "*If the player chooses to leave:*", 1);
+		else if (SwitchFlag.Equals("MapID"))
+			AddHistory($"*If the team has entered {(mapIDs.TryGetValue(Case.CaseVariable, out var mapID) ? mapID : "a certain area")}:*", 1);
+		else if (SwitchFlag.Equals("ScenarioSelect"))
+			AddHistory($"*If the team {(Case.CaseVariable.Contains("51") ? "is going on a rescue mission" : Case.CaseVariable.Contains("52") ? "is awaiting rescue" : "is having a normal day")}:*", 1);
 		else if (!Case.PureDialogue)
 			AddHistory($"*If the player chooses \"{Case.CaseVariable}\":*", 1);
 
@@ -318,7 +322,17 @@ internal partial class MarkdownState
 					if (sInput.Cases.Count == 0)
 						break;
 					foreach (ESCase Case in sInput.Cases)
-						if (!ProcessSwitchCase(Case, false, false, true))
+						if (!ProcessSwitchCase(Case, "Random"))
+							return false;
+					break;
+				}
+
+				if (sInput.GetTargetVariable().Contains("GROUND_ENTER"))
+				{
+					if (sInput.Cases.Count == 0)
+						break;
+					foreach (ESCase Case in sInput.Cases)
+						if (!ProcessSwitchCase(Case, "MapID"))
 							return false;
 					break;
 				}
@@ -337,19 +351,31 @@ internal partial class MarkdownState
 					break;
 				}
 
-				if (sInput.GetTargetVariable().Contains("COUNT_ITEM"))
+				if (sInput.GetTargetVariable().Contains("COUNT_ITEM") || sInput.GetTargetVariable().Contains("COUNT_TABLE_ITEM"))
 				{
 					if (sInput.Cases.Count == 0)
 						break;
-					if (!ProcessSwitchCase(sInput.Cases[0], true))
+					if (!ProcessSwitchCase(sInput.Cases[0], "ItemCount"))
 						return false;
 					break;
 				}
 
 				if (sInput.GetTargetVariable().Contains("MENU_GIVE_ITEM"))
 				{
+					if (sInput.Cases.Count == 0)
+						break;
 					foreach (ESCase Case in sInput.Cases)
-						if (!ProcessSwitchCase(Case, false, true))
+						if (!ProcessSwitchCase(Case, "ItemGet"))
+							return false;
+					break;
+				}
+
+				if (sInput.GetTargetVariable().Contains("SCENARIO_SELECT"))
+				{
+					if (sInput.Cases.Count == 0)
+						break;
+					foreach (ESCase Case in sInput.Cases)
+						if (!ProcessSwitchCase(Case, "ScenarioSelect"))
 							return false;
 					break;
 				}

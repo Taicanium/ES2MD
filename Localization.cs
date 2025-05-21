@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Xml.Linq;
 
 namespace ES2MD;
 
@@ -298,6 +297,34 @@ static class Localization
 		new("FACE_WORRIED", "Worried")
 	]);
 
+	public static Dictionary<string, string> mapIDs = new ([
+		new("23", "Craggy Coast"),
+		new("24", "Rock Path"),
+		new("25", "Foggy Forest"),
+		new("26", "Rock Path"),
+		new("27", "Mt. Horn"),
+		new("45", "Sealed Ruin"),
+		new("46", "Deep Sealed Ruin"),
+		new("47", "Dusk Forest"),
+		new("48", "Deep Dusk Forest"),
+		new("50", "Treeshroud Forest"),
+		new("51", "Treeshroud Forest after previously failing"),
+		new("52", "Deep Treeshroud Forest"),
+		new("55", "Brine Cave"),
+		new("56", "Lower Brine Cave"),
+		new("59", "Hidden Land"),
+		new("60", "Hidden Highland"),
+		new("67", "Temporal Tower"),
+		new("68", "Temporal Spire"),
+		new("74", "Mystifying Forest"),
+		new("97", "Spacial Rift"),
+		new("98", "Deep Spacial Rift"),
+		new("102", "Dark Crater"),
+		new("156", "Shaymin Village"),
+		new("228", "Hot Spring"),
+		new("311", "the Beach"),
+	]);
+
 	public static Dictionary<string, string> scenarioFlags = new([
 		new("[3, 1]", "the Hero and Partner have arrived at Wigglytuff's Guild"),
 		new("[3, 3]", "the team has arrived at Drenched Bluff"),
@@ -366,6 +393,7 @@ static class Localization
 		new("[25, 2]", "the team has entered the Hidden Land"),
 		new("[25, 3]", "the team has entered the Hidden Highland"),
 		new("[25, 4]", "the team has arrived at the Rainbow Stoneship"),
+		new("= 26", "the team has ridden on the Rainbow Stoneship"),
 		new("[26, 3]", "the team has arrived at Temporal Tower"),
 		new("[26, 4]", "the team has arrived at Temporal Spire"),
 		new("[26, 5]", "the team has entered Temporal Spire"),
@@ -446,10 +474,12 @@ static class Localization
 		new(@"hero", "`Hero Name`"),
 		new(@"player", "`Hero Name`"),
 		new(@"K", string.Empty),
-		new(@"M:H8", "\U0001FA77"),
+		new(@"M:H8", "🤍"),
 		new(@"M:I0", "`TM`"),
 		new(@"MP", CultureInfo.CurrentCulture.NumberFormat.CurrencyGroupSeparator),
 		new(@"partner", "`Partner Name`"),
+		new(@"s_item:0", "`Special Item`"),
+		new(@"s_item:1", "`Special Item`"),
 		new(@"team:", "`Team Name`"),
 	]);
 }
