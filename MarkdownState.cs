@@ -10,6 +10,8 @@ namespace ES2MD;
 internal partial class MarkdownState
 {
 	private string? Actor;
+	private readonly Dictionary<string, string?> ActorEffects = [];
+	private int? ActorIndex;
 	private int ArgumentIndex = 0;
 	private bool BlockQuote;
 	private int CaseDepth = 0;
@@ -61,16 +63,28 @@ internal partial class MarkdownState
 	{
 		switch (Identifier)
 		{
+			case "CallCommon":
+				if (argument.Equals("CORO_MESSAGE_CLOSE_WAIT_FUNC"))
+				{
+					ActorEffects.Clear();
+					ActorIndex = null;
+					Effect = null;
+					EffectActor = null;
+				}
+				break;
 			case "jump":
 				var label = AssertLabel(argument);
 				AddHistory($"*Jump to [anchor {label}](#{label})*", 2);
 				break;
 			case "message_SetActor":
 				Actor = null;
+				ActorIndex = null;
 				if (actors.TryGetValue(argument, out Actor))
 					Faces.TryGetValue(Actor, out Face);
 				if (Actor is null)
 					break;
+				if (!argument.Contains("ATTENDANT") && Regex.IsMatch(argument, @"[0-9]$"))
+					ActorIndex = int.Parse(argument[^1..]);
 				break;
 			case "message_SetFace":
 			case "message_SetFaceOnly":
@@ -95,15 +109,26 @@ internal partial class MarkdownState
 				if (int.TryParse(argument, out var _))
 					break;
 
-				var OldEffect = Effect;
 				if (!effects.TryGetValue(argument, out Effect))
-					Effect = OldEffect;
+					Effect = null;
 
 				if (argument.Equals("EFFECT_NONE"))
 					Effect = null;
 
-				if (EffectActor is null && Effect is not null)
-					AddHistory($"{Effect}", 1);
+				if (EffectActor is not null)
+				{
+					if (Effect is null)
+						ActorEffects.Remove(EffectActor);
+					else if (!ActorEffects.TryAdd(EffectActor, Effect))
+						ActorEffects[EffectActor] = Effect;
+				}
+
+				if (Effect is null)
+					break;
+
+				if (EffectActor is null)
+					AddHistory($"{Effect}", 2);
+
 				break;
 			case "SCENARIO_MAIN":
 			case "SCENARIO_SIDE":
@@ -136,19 +161,16 @@ internal partial class MarkdownState
 		if (Actor is not null && Face is not null)
 		{
 			AddHistory($"`{Actor.Replace($" Name", string.Empty)} {Face}`", 1);
-			if (Effect is not null)
-				History[^2] += $" {Effect}";
+			if (ActorEffects.TryGetValue(Actor, out var ThisEffect))
+				History[^2] += $" {ThisEffect}";
 		}
-		else if (Effect is not null)
-			AddHistory($"{Effect}", 1);
 
 		var afterTags = ProcessTags(input.Trim());
 		if (!afterTags.Equals(string.Empty))
-			AddHistory($"`{Actor ?? "💬"}`: \"{afterTags}\"", 2);
+			AddHistory($"`{Actor ?? "💬"}`{(ActorIndex is not null ? $" {ActorIndex}" : "")}: \"{afterTags}\"", 2);
 
 		BlockQuote = false;
 		Effect = null;
-		EffectActor = null;
 	}
 
 	private void ProcessIdentifier()
@@ -158,8 +180,11 @@ internal partial class MarkdownState
 			case "break_loop":
 				AddHistory("*Break from this loop.*", 2);
 				break;
+			case "message_EmptyActor":
 			case "message_ResetActor":
 				Actor = null;
+				ActorIndex = null;
+				EffectActor = null;
 				Face = null;
 				break;
 			case "screen_FadeIn":
@@ -392,6 +417,31 @@ internal partial class MarkdownState
 					var identifiers = ((ESTemplate)input).GetTargetIdentifiers(false);
 					if (identifiers.Length > 0)
 						actors.TryGetValue(identifiers[0], out EffectActor);
+					break;
+				}
+				if (Identifier?.Equals("WaitEffect") is true)
+				{
+					var identifiers = ((ESTemplate)input).GetTargetIdentifiers(false);
+					if (identifiers.Length == 0)
+						break;
+
+					if (!actors.TryGetValue(identifiers[0], out var argument))
+						break;
+
+					if (!ActorEffects.TryGetValue(argument, out Effect))
+						break;
+
+					ActorIndex = null;
+					if (!identifiers[0].Contains("ATTENDANT") && Regex.IsMatch(argument, @"[0-9]$"))
+						ActorIndex = int.Parse(argument[^1..]);
+
+					AddHistory($"`{(argument.Replace(" Name", string.Empty))}`{(ActorIndex is not null ? $" {ActorIndex}" : "")}: {Effect}", 2);
+
+					ActorEffects.Clear();
+					ActorIndex = null;
+					Effect = null;
+					EffectActor = null;
+					break;
 				}
 				break;
 			case ESToken.ESTokenType.Type:
@@ -419,12 +469,12 @@ internal partial class MarkdownState
 	public void Reset()
 	{
 		Actor = null;
+		ActorEffects.Clear();
 		ArgumentIndex = 0;
 		BlockQuote = false;
 		CaseDepth = 0;
 		ConditionalDepth = 0;
 		Effect = null;
-		EffectActor = null;
 		Face = null;
 		Faded = false;
 		Faces.Clear();

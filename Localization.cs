@@ -8,9 +8,9 @@ namespace ES2MD;
 static class Localization
 {
 	public static Dictionary<string, string> actors = new([
-		new("ACTOR_ADVENTURE_NPC1", "(__NPC1)"),
-		new("ACTOR_ADVENTURE_NPC2", "(__NPC2)"),
-		new("ACTOR_ADVENTURE_NPC3", "(__NPC3)"),
+		new("ACTOR_ADVENTURE_NPC1", "(__NPC)"),
+		new("ACTOR_ADVENTURE_NPC2", "(__NPC)"),
+		new("ACTOR_ADVENTURE_NPC3", "(__NPC)"),
 		new("ACTOR_ATTENDANT_MANAFI", "Manaphy"),
 		new("ACTOR_ATTENDANT1", "Partner Name"),
 		new("ACTOR_ATTENDANT2", "Manaphy"),
@@ -24,10 +24,10 @@ static class Localization
 		new("ACTOR_NPC_BARUBIITO3", "Volbeat"),
 		new("ACTOR_NPC_BARUBIITO4", "Volbeat"),
 		new("ACTOR_NPC_BETOBETAA", "Grimer"),
-		new("ACTOR_NPC_BETOBETAA2", "Volbeat"),
-		new("ACTOR_NPC_BETOBETAA3", "Volbeat"),
-		new("ACTOR_NPC_BETOBETAA4", "Volbeat"),
-		new("ACTOR_NPC_BETOBETAA5", "Volbeat"),
+		new("ACTOR_NPC_BETOBETAA2", "Grimer"),
+		new("ACTOR_NPC_BETOBETAA3", "Grimer"),
+		new("ACTOR_NPC_BETOBETAA4", "Grimer"),
+		new("ACTOR_NPC_BETOBETAA5", "Grimer"),
 		new("ACTOR_NPC_BETOBETON", "Muk"),
 		new("ACTOR_NPC_BETOBETON2", "Muk"),
 		new("ACTOR_NPC_BETOBETON3", "Muk"),
