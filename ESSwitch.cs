@@ -69,13 +69,13 @@ internal partial class ESSwitch : ESToken
 			if (value[i].Equals('}') || (!braceLevels[orderCount] && (JumpRegex().IsMatch(thisData) || BreakWords.Any(word => thisData.EndsWith(word)))))
 			{
 				orderCount--;
-				if (orderCount == 1)
-				{
-					var dcReg = DoubleCaseRegex().Replace(thisData, ":");
-					Cases.Add(new(dcReg.Replace(": default:", ":").Trim(), newMemberMenu, Indent + 1));
-					thisData = string.Empty;
-					waitingOnCase = true;
-				}
+				if (orderCount != 1)
+					continue;
+
+				var dcReg = DoubleCaseRegex().Replace(thisData, ":");
+				Cases.Add(new(dcReg.Replace(": default:", ":").Trim(), newMemberMenu, Indent + 1));
+				thisData = string.Empty;
+				waitingOnCase = true;
 			}
 		}
 	}

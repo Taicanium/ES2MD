@@ -64,13 +64,13 @@ internal partial class MarkdownState
 		switch (Identifier)
 		{
 			case "CallCommon":
-				if (argument.Equals("CORO_MESSAGE_CLOSE_WAIT_FUNC"))
-				{
-					ActorEffects.Clear();
-					ActorIndex = null;
-					Effect = null;
-					EffectActor = null;
-				}
+				if (!argument.Equals("CORO_MESSAGE_CLOSE_WAIT_FUNC"))
+					break;
+
+				ActorEffects.Clear();
+				ActorIndex = null;
+				Effect = null;
+				EffectActor = null;
 				break;
 			case "jump":
 				var label = AssertLabel(argument);
@@ -134,8 +134,7 @@ internal partial class MarkdownState
 			case "SCENARIO_SIDE":
 				if (ArgumentIndex == 1)
 					scn1 = argument;
-
-				if (ArgumentIndex == 2)
+				else if (ArgumentIndex == 2)
 				{
 					scn2 = argument;
 					AddHistory($"*Scenario flag: [{scn1}, {scn2}]*", 2);
@@ -207,18 +206,28 @@ internal partial class MarkdownState
 
 	private bool ProcessSwitchCase(ESCase Case, string SwitchFlag = "")
 	{
-		if (SwitchFlag.Equals("Random"))
-			AddHistory(Case.CaseVariable.Contains("default") ? $"Else:" : $"*Pick a random number. If it is {Case.CaseVariable}:*", 1);
-		else if (SwitchFlag.Equals("ItemCount"))
-			AddHistory($"*If the player has the needed item:*", 1);
-		else if (SwitchFlag.Equals("ItemGet"))
-			AddHistory(Case.CaseVariable.Contains("default") ? $"*If the player chooses to take the item:*" : "*If the player chooses to leave:*", 1);
-		else if (SwitchFlag.Equals("MapID"))
-			AddHistory($"*If the team has entered {(mapIDs.TryGetValue(Case.CaseVariable, out var mapID) ? mapID : "a certain area")}:*", 1);
-		else if (SwitchFlag.Equals("ScenarioSelect"))
-			AddHistory($"*If the team {(Case.CaseVariable.Contains("51") ? "is going on a rescue mission" : Case.CaseVariable.Contains("52") ? "is awaiting rescue" : "is having a normal day")}:*", 1);
-		else if (!Case.PureDialogue)
-			AddHistory($"*If the player chooses \"{Case.CaseVariable}\":*", 1);
+		switch (SwitchFlag)
+		{
+			case "Random":
+				AddHistory(Case.CaseVariable.Contains("default") ? $"Else:" : $"*Pick a random number. If it is {Case.CaseVariable}:*", 1);
+				break;
+			case "ItemCount":
+				AddHistory($"*If the player has the needed item:*", 1);
+				break;
+			case "ItemGet":
+				AddHistory(Case.CaseVariable.Contains("default") ? $"*If the player chooses to take the item:*" : "*If the player chooses to leave:*", 1);
+				break;
+			case "MapID":
+				AddHistory($"*If the team has entered {(mapIDs.TryGetValue(Case.CaseVariable, out var mapID) ? mapID : "a certain area")}:*", 1);
+				break;
+			case "ScenarioSelect":
+				AddHistory($"*If the team {(Case.CaseVariable.Contains("51") ? "is going on a rescue mission" : Case.CaseVariable.Contains("52") ? "is awaiting rescue" : "is having a normal day")}:*", 1);
+				break;
+			default:
+				if (!Case.PureDialogue)
+					AddHistory($"*If the player chooses \"{Case.CaseVariable}\":*", 1);
+				break;
+		}
 
 		if (Case.PureDialogue && !Case.CaseVariable.Equals("default"))
 			return false;

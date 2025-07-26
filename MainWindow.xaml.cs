@@ -121,12 +121,19 @@ Tokens: {TokenSum:N0}";
 	private ESTree ProcessESFile(string filename)
 	{
 		string[] lineData = File.ReadAllLines(filename);
-
 		ESTree newTree = new();
-		if (newTree.Construct(string.Join(' ', lineData.Select(line => CommentRegex().Replace(line, string.Empty).Trim())), Path.GetFileNameWithoutExtension(filename)))
-			Trees.Add(newTree);
 
-		ProcessToMarkdown(newTree);
+		try
+		{
+			if (newTree.Construct(string.Join(' ', lineData.Select(line => CommentRegex().Replace(line, string.Empty).Trim())), Path.GetFileNameWithoutExtension(filename)))
+				Trees.Add(newTree);
+
+			ProcessToMarkdown(newTree);
+		}
+		catch (Exception ex)
+		{
+			return newTree;
+		}
 
 		return newTree;
 	}

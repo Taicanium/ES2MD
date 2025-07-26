@@ -20,7 +20,7 @@ internal partial class ESTree()
 		_name = string.IsNullOrWhiteSpace(_name) ? IndexRegex().Match(fileData).Groups[1].Value : _name;
 
 		var split = ComplexTreeRegex().Split(fileData);
-		
+
 		for (int i = 1; i < split.Length; i += 2)
 		{
 			var matches = BodyRegex().Matches(split[i + 1]);
@@ -29,11 +29,11 @@ internal partial class ESTree()
 
 			ESAnimation animation = new(matches[0].Groups[1].Value.Trim());
 
-			if (animation.Construct(matches[0].Groups[2].Value.Trim(), split[i].Trim()))
-			{
-				AnimationSum++;
-				Animations.Add(animation);
-			}
+			if (!animation.Construct(matches[0].Groups[2].Value.Trim(), split[i].Trim()))
+				continue;
+
+			AnimationSum++;
+			Animations.Add(animation);
 		}
 
 		return true;

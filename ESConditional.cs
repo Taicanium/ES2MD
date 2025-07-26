@@ -52,14 +52,14 @@ internal partial class ESConditional : ESToken
 					if (braceCount == 1)
 						thisData = string.Empty;
 				}
-				if (val.Equals(')'))
+				else if (val.Equals(')'))
 				{
 					braceCount--;
-					if (braceCount == 0)
-					{
-						_comparison = thisData[..^1].Trim();
-						break;
-					}
+					if (braceCount != 0)
+						continue;
+
+					_comparison = thisData[..^1].Trim();
+					break;
 				}
 			}
 		}

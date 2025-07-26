@@ -27,21 +27,19 @@ internal partial class ESNode(int Indent = 0)
 			thisData += val[i];
 			if (val[i].Equals('{'))
 				braceCount++;
-			if (val[i].Equals('}'))
+			else if (val[i].Equals('}'))
 			{
 				braceCount--;
-				if (braceCount == 0)
-				{
-					MakeToken(thisData.Trim());
-					thisData = string.Empty;
+				if (braceCount != 0)
 					continue;
-				}
+
+				MakeToken(thisData.Trim());
+				thisData = string.Empty;
 			}
-			if (val[i].Equals(';') && braceCount == 0)
+			else if (val[i].Equals(';') && braceCount == 0)
 			{
 				MakeToken(thisData.Trim());
 				thisData = string.Empty;
-				continue;
 			}
 		}
 
