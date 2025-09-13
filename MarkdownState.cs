@@ -7,7 +7,7 @@ namespace ES2MD;
 /// <summary>
 /// The Markdown state engine handles translation of an EXPS file to Markdown.
 /// </summary>
-internal partial class MarkdownState
+internal partial class MarkdownState(string? Target)
 {
 	private string? Actor;
 	private readonly Dictionary<string, string?> ActorEffects = [];
@@ -17,7 +17,7 @@ internal partial class MarkdownState
 	private int CaseDepth = 0;
 	private int ConditionalDepth = 0;
 	private string? Effect;
-	private string? EffectActor;
+	private string? EffectActor = Target;
 	private string? Face;
 	private bool Faded;
 	private readonly Dictionary<string, string> Faces = [];
@@ -27,6 +27,7 @@ internal partial class MarkdownState
 	private bool OrphanedElse;
 	private string scn1 = string.Empty;
 	private string scn2 = string.Empty;
+	private readonly string? Target = Target;
 
 	private void AddHistory(string input, int blankLines)
 	{
@@ -70,7 +71,10 @@ internal partial class MarkdownState
 				ActorEffects.Clear();
 				ActorIndex = null;
 				Effect = null;
-				EffectActor = null;
+				EffectActor = Target;
+				break;
+			case "EVENT_LOCAL":
+				AddHistory($"*Set the local event flag to {argument}.*", 2);
 				break;
 			case "jump":
 				var label = AssertLabel(argument);
@@ -128,6 +132,8 @@ internal partial class MarkdownState
 
 				if (EffectActor is null)
 					AddHistory($"{Effect}", 2);
+				else if (Target is not null)
+					AddHistory($"`{Target.Replace(" Name", string.Empty)}`{(ActorIndex is not null ? $" {ActorIndex}" : "")}: {Effect}", 2);
 
 				break;
 			case "SCENARIO_MAIN":
@@ -183,7 +189,7 @@ internal partial class MarkdownState
 			case "message_ResetActor":
 				Actor = null;
 				ActorIndex = null;
-				EffectActor = null;
+				EffectActor = Target;
 				Face = null;
 				break;
 			case "screen_FadeIn":
@@ -208,8 +214,8 @@ internal partial class MarkdownState
 	{
 		switch (SwitchFlag)
 		{
-			case "Random":
-				AddHistory(Case.CaseVariable.Contains("default") ? $"Else:" : $"*Pick a random number. If it is {Case.CaseVariable}:*", 1);
+			case "EventLocal":
+				AddHistory(Case.CaseVariable.Contains("default") ? $"If the local event flag is none of the above:" : $"*If the local event flag is {Case.CaseVariable}:*", 1);
 				break;
 			case "ItemCount":
 				AddHistory($"*If the player has the needed item:*", 1);
@@ -219,6 +225,9 @@ internal partial class MarkdownState
 				break;
 			case "MapID":
 				AddHistory($"*If the team has entered {(mapIDs.TryGetValue(Case.CaseVariable, out var mapID) ? mapID : "a certain area")}:*", 1);
+				break;
+			case "Random":
+				AddHistory(Case.CaseVariable.Contains("default") ? $"Else:" : $"*Pick a random number. If it is {Case.CaseVariable}:*", 1);
 				break;
 			case "ScenarioSelect":
 				AddHistory($"*If the team {(Case.CaseVariable.Contains("51") ? "is going on a rescue mission" : Case.CaseVariable.Contains("52") ? "is awaiting rescue" : "is having a normal day")}:*", 1);
@@ -290,6 +299,8 @@ internal partial class MarkdownState
 				}
 				else if (cInput.Comparison.Contains("PERFORMANCE_PROGRESS_LIST[7]"))
 					AddHistory("*If the party leader cannot be switched at this time:*", 2);
+				else if (cInput.Comparison.Contains("EVENT_LOCAL"))
+					AddHistory("*If a local event has been triggered:*", 2);
 				else if (cInput.Comparison.Contains("not debug"))
 					AddHistory("*If not debugging:*", 2);
 				else if (cInput.Comparison.Contains("debug"))
@@ -357,6 +368,16 @@ internal partial class MarkdownState
 						break;
 					foreach (ESCase Case in sInput.Cases)
 						if (!ProcessSwitchCase(Case, "Random"))
+							return false;
+					break;
+				}
+
+				if (sInput.GetTargetVariable().Contains("EVENT_LOCAL"))
+				{
+					if (sInput.Cases.Count == 0)
+						break;
+					foreach (ESCase Case in sInput.Cases)
+						if (!ProcessSwitchCase(Case, "EventLocal"))
 							return false;
 					break;
 				}
@@ -449,7 +470,7 @@ internal partial class MarkdownState
 					ActorEffects.Clear();
 					ActorIndex = null;
 					Effect = null;
-					EffectActor = null;
+					EffectActor = Target;
 					break;
 				}
 				break;

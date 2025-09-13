@@ -6,15 +6,16 @@ namespace ES2MD;
 /// This represents a single scene containing multiple animation defs within an ExplorerScript file.
 /// An object of type ESAnimation corresponds to, e.g., the "def 0 {" line as well as everything inside of the def node's braces.
 /// </summary>
-internal partial class ESAnimation(string Target, int Indent = 0)
+internal partial class ESAnimation(string? Target, int Indent = 0)
 {
 	private int _indent = Indent;
 	private readonly List<ESNode> _nodes = [];
-	private readonly string _target = Target.Trim(); // Subsequent animations past "def 0" are usually pointed at a specific character or animation.
+	private readonly string? _target = Target?.Replace("actor ", string.Empty).Trim(); // Subsequent animations past "def 0" are usually pointed at a specific character or animation.
 
 	public string AnimIndex { get; private set; } = string.Empty;
 	public int Indent { get => _indent; set => _indent = value; }
 	public List<ESNode> Nodes { get => _nodes; }
+	public string? Target { get => _target; }
 
 	public bool Construct(string animData, string aIndex = "")
 	{

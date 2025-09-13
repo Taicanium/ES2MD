@@ -144,7 +144,9 @@ Tokens: {TokenSum:N0}";
 			Directory.CreateDirectory($"Syntax Trees/");
 		File.WriteAllText($"Syntax Trees/{tree.Name}.txt", $"{tree}");
 
-		MarkdownState mdState = new();
+		string? target = tree.Animations[0].Target ?? string.Empty;
+		Localization.actors.TryGetValue(target, out target);
+		MarkdownState mdState = new(target);
 
 		foreach (ESNode node in tree.Animations[0].Nodes)
 			mdState.Progress(node);

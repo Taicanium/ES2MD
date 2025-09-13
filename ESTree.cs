@@ -27,7 +27,8 @@ internal partial class ESTree()
 			if (matches.Count == 0)
 				continue;
 
-			ESAnimation animation = new(matches[0].Groups[1].Value.Trim());
+			var target = matches[0].Groups[1].Value.Trim();
+			ESAnimation animation = new(string.IsNullOrWhiteSpace(target) ? null : target);
 
 			if (!animation.Construct(matches[0].Groups[2].Value.Trim(), split[i].Trim()))
 				continue;
