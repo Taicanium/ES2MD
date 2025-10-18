@@ -24,7 +24,13 @@ internal static class Common
 	public static string MarkdownFolder = $"./Markdown/";
 	public static string SyntaxTreeFolder = $"./Syntax Trees/";
 
+	/// <summary>
+	/// DIspatches an action to the main thread for synchronous execution.
+	/// </summary>
 	public static void Concurrent(Action callback) => Application.Current.Dispatcher.Invoke(callback);
 
+	/// <summary>
+	/// Dispatches a function with no arguments to the main thread for synchronous execution.
+	/// </summary>
 	public static T Concurrent<T>(Func<T> callback) => Application.Current.Dispatcher.Invoke(callback);
 }

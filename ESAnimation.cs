@@ -3,7 +3,7 @@
 namespace ES2MD;
 
 /// <summary>
-/// This represents a single scene containing multiple animation defs within an ExplorerScript file.
+/// This represents a single cutscene within an ExplorerScript file.
 /// An object of type ESAnimation corresponds to, e.g., the "def 0 {" line as well as everything inside of the def node's braces.
 /// </summary>
 internal partial class ESAnimation(string? Target, int Indent = 0)

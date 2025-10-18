@@ -5,7 +5,7 @@ namespace ES2MD;
 
 /// <summary>
 /// An object of type ESNode corresponds roughly to a line of code in an EXPS file.
-/// A single complete command - whether that be a function call, assignment, or operation - is an ESNode.
+/// A single complete command - whether that be a function call, assignment, operation, or action performed by an actor - is an ESNode.
 /// </summary>
 internal partial class ESNode(int Indent = 0)
 {

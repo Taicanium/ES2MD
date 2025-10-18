@@ -36,61 +36,62 @@ public partial class MainWindow : Window
 			ValidateNames = true,
 		};
 
-		if (openFileDialog.ShowDialog() is true)
+		if (openFileDialog.ShowDialog() is false)
+			return;
+
+		BackgroundWorker fileWorker = new();
+		BackgroundWorker displayWorker = new()
 		{
-			BackgroundWorker fileWorker = new();
-			BackgroundWorker displayWorker = new()
+			WorkerSupportsCancellation = true,
+		};
+
+		fileWorker.DoWork += (_, _) =>
+		{
+			AnimationSum = 0;
+			ArgumentSum = 0;
+			ArrayAccessorSum = 0;
+			ConditionalSum = 0;
+			DialogueSum = 0;
+			FileCount = 0;
+			IdentifierSum = 0;
+			LabelSum = 0;
+			LoopSum = 0;
+			NodeSum = 0;
+			SwitchSum = 0;
+			TemplateSum = 0;
+			TokenSum = 0;
+
+			foreach (var file in openFileDialog.FileNames)
 			{
-				WorkerSupportsCancellation = true,
-			};
-
-			fileWorker.DoWork += (_, _) =>
-			{
-				AnimationSum = 0;
-				ArgumentSum = 0;
-				ArrayAccessorSum = 0;
-				ConditionalSum = 0;
-				DialogueSum = 0;
-				FileCount = 0;
-				IdentifierSum = 0;
-				LabelSum = 0;
-				LoopSum = 0;
-				NodeSum = 0;
-				SwitchSum = 0;
-				TemplateSum = 0;
-				TokenSum = 0;
-
-				foreach (var file in openFileDialog.FileNames)
-				{
-					try
-					{
-						Concurrent(() =>
-						{
-							EXPSUtils.ProcessESFile(file);
-							FileCount++;
-						});
-
-						SpinWait.SpinUntil(() => false, 5);
-					}
-					catch
-					{
-						return;
-					}
-				}
-			};
-
-			fileWorker.RunWorkerCompleted += (_, _) =>
-			{
-				displayWorker.CancelAsync();
-			};
-
-			displayWorker.DoWork += (sender, _) =>
-			{
-				while (((BackgroundWorker?)sender)?.CancellationPending is false)
+				try
 				{
 					Concurrent(() =>
 					{
-						ResultsBox.Text = $@"Files: {FileCount:N0}
+						EXPSUtils.ProcessESFile(file);
+						FileCount++;
+					});
+
+					SpinWait.SpinUntil(() => false, 5);
+				}
+				catch
+				{
+					return;
+				}
+			}
+		};
+
+		fileWorker.RunWorkerCompleted += (_, _) =>
+		{
+			displayWorker.CancelAsync();
+		};
+
+		displayWorker.DoWork += (sender, _) =>
+		{
+			while (((BackgroundWorker?)sender)?.CancellationPending is false)
+			{
+				Concurrent(() =>
+				{
+					ResultsBox.Text = $@"Files: {FileCount:N0}
 
 Animations: {AnimationSum:N0}
 Arguments: {ArgumentSum:N0}
@@ -104,14 +105,13 @@ Nodes: {NodeSum:N0}
 Switches: {SwitchSum:N0}
 Templates: {TemplateSum:N0}
 Tokens: {TokenSum:N0}";
-					});
+				});
 
-					SpinWait.SpinUntil(() => false, 40); // To prevent overloading the UI by dispatching the results text too quickly.
-				}
-			};
+				SpinWait.SpinUntil(() => false, 40); // To prevent overloading the UI by dispatching the results text too quickly.
+			}
+		};
 
-			fileWorker.RunWorkerAsync();
-			displayWorker.RunWorkerAsync();
-		}
+		fileWorker.RunWorkerAsync();
+		displayWorker.RunWorkerAsync();
 	}
 }

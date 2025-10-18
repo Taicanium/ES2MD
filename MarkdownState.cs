@@ -5,7 +5,7 @@ using static ES2MD.Localization;
 namespace ES2MD;
 
 /// <summary>
-/// The Markdown state engine handles translation of an EXPS file to Markdown.
+/// The Markdown state engine handles translation of an EXPS syntax tree to Markdown.
 /// </summary>
 internal partial class MarkdownState(string? Target)
 {
@@ -21,14 +21,18 @@ internal partial class MarkdownState(string? Target)
 	private string? Face;
 	private bool Faded;
 	private readonly Dictionary<string, string> Faces = [];
-	private string? Identifier;
 	private readonly List<string> History = [];
+	private string? Identifier;
 	private int LoopDepth = 0;
 	private bool OrphanedElse;
 	private string scn1 = string.Empty;
 	private string scn2 = string.Empty;
 	private readonly string? Target = Target;
 
+	/// <summary>
+	/// Adds a line of text to the final Markdown output.
+	/// </summary>
+	/// <param name="blankLines">The number of blank lines to insert after this text.</param>
 	private void AddHistory(string input, int blankLines)
 	{
 		if (BlockQuote)
@@ -43,6 +47,9 @@ internal partial class MarkdownState(string? Target)
 		BlockQuote = false;
 	}
 
+	/// <summary>
+	/// Extract the numerical value of a label from its surrounding formatting.
+	/// </summary>
 	private static string AssertLabel(string input) => input.Replace("@", string.Empty).Replace("label", string.Empty).Replace("_", string.Empty).Replace(";", string.Empty);
 
 	public bool Export(string filename)
@@ -60,6 +67,9 @@ internal partial class MarkdownState(string? Target)
 		return true;
 	}
 
+	/// <summary>
+	/// Advance the state engine based on the value of an argument token and the identifier token to which it is attached.
+	/// </summary>
 	private void ProcessArgument(string argument)
 	{
 		switch (Identifier)
@@ -465,7 +475,7 @@ internal partial class MarkdownState(string? Target)
 					if (!identifiers[0].Contains("ATTENDANT") && Regex.IsMatch(argument, @"[0-9]$"))
 						ActorIndex = int.Parse(argument[^1..]);
 
-					AddHistory($"`{(argument.Replace(" Name", string.Empty))}`{(ActorIndex is not null ? $" {ActorIndex}" : "")}: {Effect}", 2);
+					AddHistory($"`{argument.Replace(" Name", string.Empty)}`{(ActorIndex is not null ? $" {ActorIndex}" : "")}: {Effect}", 2);
 
 					ActorEffects.Clear();
 					ActorIndex = null;
@@ -496,6 +506,9 @@ internal partial class MarkdownState(string? Target)
 		return true;
 	}
 
+	/// <summary>
+	/// Return the state engine's properties to their initial values.
+	/// </summary>
 	public void Reset()
 	{
 		Actor = null;
