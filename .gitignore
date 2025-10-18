@@ -3,3 +3,6 @@
 /obj
 *.exps
 *.sln
+/publish
+/Properties
+*.user
