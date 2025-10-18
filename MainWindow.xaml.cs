@@ -1,7 +1,5 @@
 ﻿using Microsoft.Win32;
 using System.ComponentModel;
-using System.IO;
-using System.Text.RegularExpressions;
 using System.Windows;
 using static ES2MD.Common;
 
@@ -13,7 +11,6 @@ namespace ES2MD;
 public partial class MainWindow : Window
 {
 	private int FileCount = 0;
-	private readonly List<ESTree> Trees = [];
 
 	public MainWindow()
 	{
@@ -27,7 +24,7 @@ public partial class MainWindow : Window
 
 	private void OpenButton(object sender, RoutedEventArgs e)
 	{
-		Trees.Clear();
+		EXPSUtils.Trees.Clear();
 
 		OpenFileDialog openFileDialog = new()
 		{
@@ -69,7 +66,7 @@ public partial class MainWindow : Window
 					{
 						Concurrent(() =>
 						{
-							ProcessESFile(file);
+							EXPSUtils.ProcessESFile(file);
 							FileCount++;
 						});
 
@@ -117,45 +114,4 @@ Tokens: {TokenSum:N0}";
 			displayWorker.RunWorkerAsync();
 		}
 	}
-
-	private ESTree ProcessESFile(string filename)
-	{
-		string[] lineData = File.ReadAllLines(filename);
-		ESTree newTree = new();
-
-		try
-		{
-			if (newTree.Construct(string.Join(' ', lineData.Select(line => CommentRegex().Replace(line, string.Empty).Trim())), Path.GetFileNameWithoutExtension(filename)))
-				Trees.Add(newTree);
-
-			ProcessToMarkdown(newTree);
-		}
-		catch (Exception ex)
-		{
-			return newTree;
-		}
-
-		return newTree;
-	}
-
-	private static void ProcessToMarkdown(ESTree tree)
-	{
-		if (!Directory.Exists($"Syntax Trees/"))
-			Directory.CreateDirectory($"Syntax Trees/");
-		File.WriteAllText($"Syntax Trees/{tree.Name}.txt", $"{tree}");
-
-		string? target = tree.Animations[0].Target ?? string.Empty;
-		Localization.actors.TryGetValue(target, out target);
-		MarkdownState mdState = new(target);
-
-		foreach (ESNode node in tree.Animations[0].Nodes)
-			mdState.Progress(node);
-
-		if (!Directory.Exists($"Markdown/"))
-			Directory.CreateDirectory($"Markdown/");
-		mdState.Export($"Markdown/{tree.Name}.md");
-	}
-
-	[GeneratedRegex(@"//.*")]
-	private static partial Regex CommentRegex();
 }

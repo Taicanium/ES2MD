@@ -20,6 +20,10 @@ internal static class Common
 	public static int TemplateSum = 0;
 	public static int TokenSum = 0;
 
+
+	public static string MarkdownFolder = $"./Markdown/";
+	public static string SyntaxTreeFolder = $"./Syntax Trees/";
+
 	public static void Concurrent(Action callback) => Application.Current.Dispatcher.Invoke(callback);
 
 	public static T Concurrent<T>(Func<T> callback) => Application.Current.Dispatcher.Invoke(callback);

@@ -7,18 +7,24 @@
         mc:Ignorable="d"
 		Background="Beige"
         Title="ES2MD" Height="425" Width="400">
-    <Grid>
-		<StackPanel Margin="0,25,0,0" HorizontalAlignment="Center">
-			<StackPanel Orientation="Horizontal">
-				<Button Height="25" Width="25" Margin="5,0" Content="..." Click="OpenButton"/>
-				<TextBox Height="25" Width="300" IsReadOnly="True" x:Name="FileNameBox"/>
-			</StackPanel>
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="25px"/>
+		</Grid.RowDefinitions>
+		<Label Grid.Column="3" Content="ES2MD: By Taica" FontStyle="Italic" Foreground="Gray" HorizontalAlignment="Right" Margin="0,20"/>
+		<Border BorderBrush="DarkGray" Grid.ColumnSpan="4" BorderThickness="1" Height="250" Margin="0,20" Width="350">
+			<TextBlock Background="White" IsEnabled="False" Text="Select one or more .exps files below." x:Name="ResultsBox"/>
+		</Border>
 
-			<Border BorderBrush="DarkGray" BorderThickness="1" Height="250" Margin="0,20">
-				<TextBlock Background="White" IsEnabled="False" x:Name="ResultsBox"/>
-			</Border>
-
-			<Button Width="80" Height="25" Content="Close" Click="CloseButton"/>
-		</StackPanel>
-    </Grid>
+		<Button Click="OpenButton" Grid.Column="1" Content="Select..." Height="25" Grid.Row="1" Width="80"/>
+		<Button Click="CloseButton" Grid.Column="2" Content="Close" Height="25" Grid.Row="1" Width="80"/>
+	</Grid>
 </Window>

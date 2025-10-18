@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.IO;
+using System.Text.RegularExpressions;
 using static ES2MD.Common;
 
 namespace ES2MD;
@@ -7,12 +8,12 @@ namespace ES2MD;
 /// An object of type ESTree corresponds to an entire .exps file and all of the animations inside it.
 /// This is the root object created when an EXPS file is opened.
 /// </summary>
-internal partial class ESTree()
+partial class ESTree()
 {
 	private readonly List<ESAnimation> _animations = [];
 	private string _name = string.Empty;
 
-	public List<ESAnimation> Animations { get => _animations; }
+	public List<ESAnimation> Animations => _animations;
 	public string Name { get => _name; private set => _name = value; }
 
 	public bool Construct(string fileData)
@@ -44,6 +45,38 @@ internal partial class ESTree()
 	{
 		_name = name;
 		return Construct(fileData);
+	}
+
+	public void ProcessToMarkdown()
+	{
+		if (!Directory.Exists(SyntaxTreeFolder))
+			Directory.CreateDirectory(SyntaxTreeFolder);
+
+		if (!Directory.Exists(MarkdownFolder))
+			Directory.CreateDirectory(MarkdownFolder);
+
+		File.WriteAllText($"{SyntaxTreeFolder}{Name}.txt", $"{this}");
+
+		foreach (ESAnimation anim in Animations)
+		{
+			string? target = anim.Target ?? string.Empty;
+			Localization.actors.TryGetValue(target, out target);
+			MarkdownState mdState = new(target);
+
+			foreach (ESNode node in anim.Nodes)
+				mdState.Progress(node);
+
+			if (!Directory.Exists($"{MarkdownFolder}{Name}/"))
+				Directory.CreateDirectory($"{MarkdownFolder}{Name}/");
+
+			mdState.Export($"{MarkdownFolder}{Name}/{anim.AnimIndex}.md");
+
+			if (new FileInfo($"{MarkdownFolder}{Name}/{anim.AnimIndex}.md").Length == 0)
+				File.Delete($"{MarkdownFolder}{Name}/{anim.AnimIndex}.md");
+		}
+
+		if (new DirectoryInfo($"{MarkdownFolder}{Name}/").EnumerateFiles().Sum(info => info.Length) == 0)
+			Directory.Delete($"{MarkdownFolder}{Name}/", true);
 	}
 
 	public override string ToString() => $"{string.Join("\n", Animations.Select(anim => anim.ToString().Replace($"\n\n", $"\n")))}";
