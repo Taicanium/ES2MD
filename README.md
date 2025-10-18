@@ -18,3 +18,20 @@ ES2MD will create two subfolders in the local directory, labeled "Syntax Trees/"
 "Syntax Trees/" contains verbose interpretations of the selected EXPS files in a raw plaintext format. Like the object metrics, this info is useful for debugging.
 
 "Markdown/" contains the final output markdown files, separated into further subfolders sharing the name of the related ExplorerScript file. Each .md file in a subfolder corresponds to a single cutscene within an ExplorerScript file, ordered the same as they were in that file.
+
+
+## Example Output
+
+The verbose syntax tree for Cutscene 1 in Pokémon Mystery Dungeon: Explorers of Sky:
+
+![Syntax Tree](https://i.imgur.com/nmCXrCM.png)
+
+
+ES2MD translates this data to Markdown like this:
+
+![Markdown](https://i.imgur.com/bMwi6M5.png)
+
+
+Which appears like this when rendered:
+
+![Rendered Markdown](https://i.imgur.com/9VgLjQn.png)
