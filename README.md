@@ -6,6 +6,8 @@ This desktop app is designed to transpile SkyTemple ExplorerScript cutscene file
 
 Many thanks to Miles Farber for providing the inspiration and the impetus for the creation of this program.
 
+See https://github.com/SkyTemple/ExplorerScript for more information on ExplorerScript and the SkyTemple project.
+
 
 ## Usage
 
